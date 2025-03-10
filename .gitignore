@@ -1,0 +1,56 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+# Ignorar arquivos de build e temporários
+bin/
+obj/
+
+# Pastas do Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Configurações específicas da plataforma
+*.dbmdl
+*.pdb
+
+# Logs e arquivos de depuração
+*.log
+*.tlog
+*.dmp
+*.tmp
+
+# Dependências e pacotes
+packages/
+node_modules/
+
+# Configurações do Rider e JetBrains
+.idea/
+*.sln.iml
+
+# Arquivos de publicação e deploy
+publish/
+wwwroot/
+
+# Configurações de ambiente
+appsettings*.json
+secrets.json
+.env
+
+# Cache e temporários do .NET
+*.vspscc
+*.vssscc
+
+# Docker
+**/[Dd]ocker*
+
+# Arquivos gerados automaticamente
+Generated/
+Backup/
+
+# Ignorar pastas específicas do sistema operacional
+.DS_Store
+Thumbs.db

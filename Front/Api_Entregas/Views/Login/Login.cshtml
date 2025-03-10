@@ -1,0 +1,114 @@
+﻿@using Api_Entregas.Models
+@model LoginViewModel
+
+@{
+    ViewData["Title"] = "Login Page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Api_Entregas</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css'>
+    <!-- Font Awesome CSS (para ícones sociais) -->
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'>
+    <!-- CSS Personalizado do Login -->
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+    <!-- CSS padrão do projeto -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+
+<body>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-title text-center">
+                        <h4>Login</h4>
+                    </div>
+                    <div class="d-flex flex-column text-center">
+                        <form asp-action="Login" method="post">
+                            <div class="form-group">
+                                <input type="email" class="form-control" id="email1" name="Email" placeholder="Your email address..." required>
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" class="form-control" id="password1" name="Password" placeholder="Your password..." required>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+                            <button type="submit" class="btn btn-info btn-block btn-round">Login</button>
+                        </form>
+                        
+                        <div class="text-center text-muted delimiter">or use a social network</div>
+                        <div class="d-flex justify-content-center social-buttons">
+                            <button type="button" class="btn btn-secondary btn-round" data-toggle="tooltip" data-placement="top" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-round" data-toggle="tooltip" data-placement="top" title="Facebook">
+                                <i class="fab fa-facebook"></i>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-round" data-toggle="tooltip" data-placement="top" title="Linkedin">
+                                <i class="fab fa-linkedin"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <div class="signup-section">Not a member yet? <a href="#a" class="text-info"> Sign Up</a>.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src='https://code.jquery.com/jquery-3.3.1.slim.min.js'></script>
+    <!-- Popper JS -->
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js'></script>
+    <!-- Bootstrap JS -->
+    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js'></script>
+    <!-- JavaScript Personalizado -->
+    <script>
+        $(document).ready(function () {
+            $('#loginModal').modal('show'); // Mostra o modal automaticamente ao carregar
+
+            // Quando o modal for exibido, altera a imagem de fundo
+            $('#loginModal').on('shown.bs.modal', function () {
+                // Definir a imagem de fundo para o corpo da página
+                $('body').css('background-image', 'url("/images/imagemFundoLogin.jpg")');
+                $('body').css('background-size', '100% 100%');  // Ajusta para preencher completamente a tela
+                $('body').css('background-position', 'center');
+                $('body').css('background-repeat', 'no-repeat');
+                $('body').css('height', '100vh');  // A altura do corpo será 100% da altura da tela
+                $('body').css('margin', '0');  // Remove qualquer margem
+            });
+
+
+            // Quando o modal for fechado, restaura a imagem de fundo original (opcional)
+            $('#loginModal').on('hidden.bs.modal', function () {
+                $('body').css('background-image', 'url("https://via.placeholder.com/1920x1080")'); // Substitua por sua imagem inicial
+                $('body').css('background-size', 'cover');
+                $('body').css('background-position', 'center');
+                $('body').css('background-repeat', 'no-repeat');
+            });
+
+            // Inicializa os tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
+
+    <!-- Scripts padrão do seu projeto -->
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+
+</html>
