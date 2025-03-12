@@ -1,8 +1,9 @@
 using System.Reflection;
-using ApiBackend_Entregas.Application.Repositories;
-using ApiBackend_Entregas.Application.Repositories.Interfaces;
-using ApiBackend_Entregas.Application.Service;
-using ApiBackend_Entregas.Application.Service.Interfaces;
+using APIBackend.Application.Services.Interfaces;
+using APIBackend.Repositories.Context;
+using APIBackend.Repositories.Interfaces;
+using APIBackend.Repositories.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +11,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Adicione serviços para controllers
 builder.Services.AddControllers();
 
+//Configuração do banco de dados
+builder.Services.AddDbContext<ApiDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))); 
+
 // Adicionando a injeção de dependência
 builder.Services.AddScoped<IUserServices, UserService>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserRepo, UserRepoService>();
+builder.Services.AddScoped<IAuthServices, AuthService>();
+builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
+
 
 //Adicionando loggs na injecao de dependencia
 // Configurar logging
