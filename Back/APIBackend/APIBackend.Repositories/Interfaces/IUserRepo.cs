@@ -1,5 +1,4 @@
-using System;
-using APIBackend.Domain;
+using APIBackend.Domain.Identity;
 
 namespace APIBackend.Repositories.Interfaces;
 

@@ -1,5 +1,4 @@
-using APIBackend.Domain;
-using APIBackend.Domain.Models;
+using APIBackend.Domain.Identity;
 
 namespace APIBackend.Application.Services.Interfaces;
 

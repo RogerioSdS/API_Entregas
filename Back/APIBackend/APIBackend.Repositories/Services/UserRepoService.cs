@@ -1,13 +1,14 @@
-using System;
-using APIBackend.Domain;
+using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace APIBackend.Repositories.Services;
 
 public class UserRepoService : IUserRepo
 {
+   private readonly UserManager<User> _userManager;
     private readonly ApiDbContext _context;
 
     public UserRepoService(ApiDbContext context)
