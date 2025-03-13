@@ -15,6 +15,10 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))); 
 
+builder.Services.AddIdentity<User, Role>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
 // Adicionando a injeção de dependência
 builder.Services.AddScoped<IUserServices, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepoService>();
