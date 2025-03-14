@@ -4,7 +4,6 @@ using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
 using APIBackend.Repositories.Services;
-using APIBackend.Domain.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -30,7 +29,7 @@ builder.Services.AddIdentity<User, Role>(options =>
 .AddDefaultTokenProviders();
 
 // Adicionando a injeção de dependência
-builder.Services.AddScoped<IUserServices, UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepoService>();
 
 //Adicionando loggs na injecao de dependencia

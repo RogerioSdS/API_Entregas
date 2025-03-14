@@ -1,9 +1,10 @@
+using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 
-namespace APIBackend.Application.Controllers
+namespace APIBackend.API.Controllers
 {
     /// <summary>
     /// Controlador responsável por gerenciar usuários.
@@ -12,87 +13,50 @@ namespace APIBackend.Application.Controllers
     [Route("api/user")]
     public class UsersController : ControllerBase
     {
-        private readonly UserManager<User> _userManager;
-        private readonly RoleManager<Role> _roleManager;
+        private readonly UserService _userService;
 
-        public UsersController(UserManager<User> userManager, RoleManager<Role> roleManager)
+        public UsersController(UserService userService)
         {
-            _userManager = userManager;
-            _roleManager = roleManager;
+            _userService = userService;
         }
 
-        // CREATE: Criar um usuário
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto model, string role, string password, bool signInAfterCreation = true)
         {
-            // Validação manual da senha
-            if (!IsValidPassword(dto.Password, out var errorMessage))
-            {
-                return BadRequest(errorMessage);
-            }
-
             var user = new User
             {
-                UserName = dto.UserName,
-                Email = dto.Email, 
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Address = dto.Address,
-                ZipCode = dto.ZipCode,
-                City = dto.City,
-                CreditLimit = dto.CreditLimit
+                UserName = model.UserName,
+                Email = model.Email, 
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Address = model.Address,
+                ZipCode = model.ZipCode,
+                City = model.City,
+                CreditLimit = model.CreditLimit
             };
 
-            var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
+            var result = await _userService.AddUserAsync(user, role, password, signInAfterCreation );
+            if (result == null)
             {
-                return BadRequest(result.Errors);
+                return BadRequest($"Erro ao criar usuário.{model.UserName}");
             }
-
+            // analisar se é necessário retornar o usuário.id somente quando for o admin que estiver criando o usuário
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
-        // Método auxiliar para validar a senha
-        private bool IsValidPassword(string password, out string errorMessage)
-        {
-            if (string.IsNullOrEmpty(password))
-            {
-                errorMessage = "The Password field is required.";
-                return false;
-            }
-
-            if (password.Length < 8 || password.Length > 100)
-            {
-                errorMessage = "The Password must be between 8 and 100 characters.";
-                return false;
-            }
-
-            var regex = new Regex(@"^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\-]).{8,}$");
-            if (!regex.IsMatch(password))
-            {
-                errorMessage = "The Password must contain at least one uppercase letter, one number, and one special character.";
-                return false;
-            }
-
-            errorMessage = null;
-            return true;
-        }
-
-        // READ: Obter um usuário por ID
         [HttpGet("{id}")]
         public async Task<IActionResult> GetUser(int id)
         {
-            var user = await _userManager.FindByIdAsync(id.ToString());
+            var user = await _userService.GetUserAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            var roles = await _userManager.GetRolesAsync(user);
-            return Ok(new { User = user, Roles = roles });
+            return Ok(new { User = user, Roles = await _userService.GetRolesAsync(user) });
         }
 
-        // READ: Listar todos os usuários
+        // Preciso realizar a validação que somente admin pode fazer essa consulta
         [HttpGet]
         public IActionResult GetAllUsers()
         {
