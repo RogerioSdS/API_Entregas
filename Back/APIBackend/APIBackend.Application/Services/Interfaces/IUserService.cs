@@ -1,11 +1,14 @@
-using APIBackend.Domain.Identity;
+using APIBackend.Application.DTOs;
 
 namespace APIBackend.Application.Services.Interfaces;
 
 public interface IUserService
 {    
-    Task<List<User>> GetUsersAsync();
-    Task<User> GetUserAsync(int id); 
-    Task<User> AddUserAsync(User user, string role, string password, bool signInAfterCreation);
-    Task<List<string>> GetRolesAsync(User user);
+    Task<UserDTO> AddUserAsync(UserDTO userDTO, string role, string password, bool signInAfterCreation = false);
+    Task<List<UserDTO>> GetUsersAsync();
+    Task<UserDTO> GetUserByIdAsync(int id); 
+    Task<UserDTO> GetUserByNameAsync(string name); 
+    Task<UserDTO> UpdateUserAsync(UserDTO userDTO);
+    Task<bool> DeleteUserAsync(UserDTO userDTO);
+    Task<List<string>> GetRolesAsync(UserDTO userDTO);
 }

@@ -11,6 +11,7 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
     public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options)
     {
     }
+    DbSet<User> Users { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
