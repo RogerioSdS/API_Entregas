@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace APIBackend.API.Controllers
 {
-    /// <summary>
-    /// Controlador responsável por gerenciar usuários.
-    /// </summary>
     [ApiController]
     [Route("api/user")]
     public class UsersController : ControllerBase
@@ -57,14 +54,19 @@ namespace APIBackend.API.Controllers
         }
 
         // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
-        [HttpGet]
+        [HttpGet("getUsers")]
         public IActionResult GetAllUsers()
         {
             var users = _userService.GetUsersAsync();
+
+            if (users.Result.Count <= 0)
+            {
+                return NotFound("Sem usuários cadastrados");
+            }
+
             return Ok(users);
         }
 
-        // UPDATE: Atualizar um usuário
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO user)
         {
@@ -77,7 +79,6 @@ namespace APIBackend.API.Controllers
             return Ok(user);
         }
 
-        // DELETE: Deletar um usuário
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {

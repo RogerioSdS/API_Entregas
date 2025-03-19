@@ -3,10 +3,10 @@ using APIBackend.Domain.Identity;
 
 namespace APIBackend.Application.Helpers
 {
-    public class APIBackend : AutoMapper.Profile
+    public class ProfilesDTO : AutoMapper.Profile
     {
        
-        public APIBackend()
+        public ProfilesDTO()
         {
             /// <summary>
             /// Mapeia a entidade <"Evento"/> para o objeto <"EventoDTO"/> e vice-versa.

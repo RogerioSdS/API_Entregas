@@ -1,21 +1,28 @@
 using System.Reflection;
 using APIBackend.Application.Services.Interfaces;
+using APIBackend.Application.Services;
 using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
 using APIBackend.Repositories.Services;
+using AutoMapper; // Importante para o AutoMapper
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using APIBackend.Application.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Adicionando o AutoMapper
+builder.Services.AddAutoMapper(typeof(ProfilesDTO).Assembly);// Registra todos os profiles no assembly
 
 // Adicione serviços para controllers
 builder.Services.AddControllers();
 
 //Configuração do banco de dados
 builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))); 
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddIdentity<User, Role>(options =>
 {
     options.Password.RequireUppercase = true; // Pelo menos uma letra maiúscula
@@ -32,8 +39,7 @@ builder.Services.AddIdentity<User, Role>(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepoService>();
 
-//Adicionando loggs na injecao de dependencia
-// Configurar logging
+// Adicionando loggs na injecao de dependencia
 builder.Services.AddLogging(logging =>
 {
     logging.ClearProviders();

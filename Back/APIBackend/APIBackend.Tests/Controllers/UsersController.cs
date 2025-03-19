@@ -19,11 +19,10 @@ namespace APIBackend.Tests.Controllers
             _controller = new UsersController(_userServiceMock.Object); // Passa o mock para a controller
         }
 
-        [Fact] // Marca que isso é um teste
+        [Fact] // Marca que esse método é um teste
         public async Task CreateUser_ValidData_ReturnsCreatedAtAction()
         {
-            // Arrange (Preparar o cenário)
-            // Criamos um UserDTO com dados fictícios para enviar à controller
+            // Arrange (Preparar o cenário): Preparamos os dados para o teste
             var userDto = new UserDTO
             {
                 FirstName = "Maria", // Nome do usuário
@@ -34,7 +33,7 @@ namespace APIBackend.Tests.Controllers
                 City = "São Paulo" // Cidade
             };
 
-            // Criamos um UserDTO que representa o resultado retornado pelo serviço
+            // Preparamos o que o serviço deverá retornar após a criação do usuário
             var userDtoCriado = new UserDTO
             {
                 FirstName = userDto.FirstName, // Nome
@@ -45,54 +44,53 @@ namespace APIBackend.Tests.Controllers
                 City = userDto.City // Cidade
             };
 
-            // Configuramos o mock: "Quando AddUserAsync for chamado, retorne userDtoCriado"
+            // Configuramos o mock: Quando o método AddUserAsync for chamado, ele retorna o userDtoCriado
             _userServiceMock.Setup(x => x.AddUserAsync(userDto, "User", "senha123", true))
-                .ReturnsAsync(userDtoCriado); // Retorna Task<UserDTO>
+                .ReturnsAsync(userDtoCriado); // Retorna o userDtoCriado quando o método for chamado
 
-            // Act (Executar a ação)
-            // Chamamos o método CreateUser da controller com os dados preparados
+            // Act (Executar a ação): Chama o método CreateUser da controller
             var resultado = await _controller.CreateUser(userDto, "User", "senha123");
 
-            // Assert (Verificar o resultado)
+            // Assert (Verificar o resultado): Verificamos o comportamento esperado
+
             // Verificamos se o resultado é do tipo CreatedAtActionResult (resposta de sucesso)
             var createdResult = Assert.IsType<CreatedAtActionResult>(resultado);
 
-            // Verificamos se o status HTTP é 201 (Created)
+            // Verificamos se o status HTTP é 201 (Created), indicando que o recurso foi criado
             Assert.Equal(201, createdResult.StatusCode);
 
-            // Verificamos se o valor retornado é o mesmo UserDTO enviado (model)
+            // Verificamos se o valor retornado é o mesmo UserDTO enviado para a criação
             Assert.Equal(userDto, createdResult.Value);
 
-            // Verificamos se o nome da ação retornada é "model" (como definido no CreatedAtAction)
+            // Verificamos se o nome da ação retornada é "model", conforme o definido no CreatedAtAction
             Assert.Equal("model", createdResult.ActionName);
         }
 
-        [Fact] // Outro teste
+        [Fact] // Outro teste para o caso de erro
         public async Task CreateUser_ServiceReturnsNull_ReturnsBadRequest()
         {
-            // Arrange (Preparar o cenário)
-            // Criamos um UserDTO com dados mínimos para testar o caso de falha
+            // Arrange (Preparar o cenário): Preparamos dados mínimos para testar o caso de falha
             var userDto = new UserDTO
             {
                 FirstName = "João", // Nome
                 LastName = "Souza", // Sobrenome
-                Email = "joao.souza@example.com", // Email
+                Email = "joao.souza@example.com", // Email válido
                 Address = "Rua Fail, 456" // Endereço (obrigatório)
             };
 
-            // Configuramos o mock: "Quando AddUserAsync for chamado, retorne null" (simula erro)
+            // Configuramos o mock: Quando AddUserAsync for chamado, ele retornará null (simulando um erro)
             _userServiceMock.Setup(x => x.AddUserAsync(userDto, "User", "senha123", true))
-                .ReturnsAsync((UserDTO)null); // Retorna Task<UserDTO> com null
+                .ReturnsAsync(null as UserDTO); // Retorna null, indicando falha na criação do usuário
 
-            // Act (Executar a ação)
-            // Chamamos o método CreateUser com os dados
+            // Act (Executar a ação): Chama o método CreateUser da controller com os dados preparados
             var resultado = await _controller.CreateUser(userDto, "User", "senha123");
 
-            // Assert (Verificar o resultado)
+            // Assert (Verificar o resultado): Verificamos se o erro foi tratado corretamente
+
             // Verificamos se o resultado é do tipo BadRequestObjectResult (resposta de erro)
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(resultado);
 
-            // Verificamos se o status HTTP é 400 (Bad Request)
+            // Verificamos se o status HTTP é 400 (Bad Request), que indica falha na solicitação
             Assert.Equal(400, badRequestResult.StatusCode);
 
             // Verificamos se a mensagem de erro é a esperada
