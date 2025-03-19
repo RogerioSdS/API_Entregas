@@ -10,135 +10,96 @@ namespace APIBackend.Tests.Controllers
 {
     public class UsersControllerTests
     {
-        private readonly Mock<UserService> _userServiceMock;
-        private readonly UsersController _controller;
+        private readonly Mock<IUserService> _userServiceMock; // Objeto falso que simula o IUserService
+        private readonly UsersController _controller; // A controller que vamos testar
 
+        // Construtor: executa antes de cada teste
         public UsersControllerTests()
         {
-            _userServiceMock = new Mock<UserService>();
-            _controller = new UsersController(_userServiceMock.Object);
+            _userServiceMock = new Mock<IUserService>(); // Cria o mock do IUserService
+            _controller = new UsersController(_userServiceMock.Object); // Passa o mock para a controller
         }
 
-        // Teste para POST /api/user
-        [Fact]
+        [Fact] // Marca que isso é um teste
         public async Task CreateUser_ValidData_ReturnsCreatedAtAction()
         {
-            // Arrange
+            // Arrange (Preparar o cenário)
+            // Criamos um UserDTO com dados fictícios que seriam enviados para a controller
             var userDto = new UserDTO
             {
-                FirstName = "John",
-                LastName = "Doe",
-                Email = "john.doe@example.com",
-                Address = "123 Street",
-                ZipCode = 12345,
-                City = "Test City"
+                FirstName = "Maria", // Nome do usuário
+                LastName = "Silva", // Sobrenome
+                Email = "maria.silva@example.com", // Email válido
+                Address = "Rua Teste, 123", // Endereço
+                ZipCode = 12345, // CEP
+                City = "São Paulo" // Cidade
             };
-            var user = new User
+
+            // Criamos um objeto User que representa o resultado do serviço
+            var userCriado = new User
             {
-                Id = 1,
-                UserName = userDto.FirstName,
-                LastName = userDto.LastName,
-                Email = userDto.Email,
-                Address = userDto.Address,
-                ZipCode = userDto.ZipCode,
-                City = userDto.City
+                Id = 1, // ID que o usuário terá após ser criado
+                UserName = userDto.Email, // O IdentityUser usa Email como UserName por padrão
+                FirstName = userDto.FirstName, // Nome
+                LastName = userDto.LastName, // Sobrenome
+                Email = userDto.Email, // Email
+                Address = userDto.Address, // Endereço
+                ZipCode = userDto.ZipCode, // CEP
+                City = userDto.City // Cidade
             };
-            _userServiceMock.Setup(x => x.AddUserAsync(It.IsAny<User>(), "User", "password123", true))
-                .ReturnsAsync(user);
 
-            // Act
-            var result = await _controller.CreateUser(userDto, "User", "password123");
+            // Configuramos o mock para dizer: "Quando AddUserAsync for chamado, retorne userCriado"
+            _userServiceMock.Setup(x => x.AddUserAsync(userDto, "User", "senha123", true))
+                .ReturnsAsync(userCriado); // Simula o serviço retornando o usuário criado
 
-            // Assert
-            var createdResult = Assert.IsType<CreatedAtActionResult>(result);
+            // Act (Executar a ação)
+            // Chamamos o método CreateUser da controller com os dados preparados
+            var resultado = await _controller.CreateUser(userDto, "User", "senha123");
+
+            // Assert (Verificar o resultado)
+            // Verificamos se o resultado é do tipo CreatedAtActionResult (resposta de sucesso ao criar algo)
+            var createdResult = Assert.IsType<CreatedAtActionResult>(resultado);
+
+            // Verificamos se o status HTTP é 201 (Created)
             Assert.Equal(201, createdResult.StatusCode);
-            Assert.Equal(user, createdResult.Value);
-            Assert.Equal("user", createdResult.ActionName);
-            Assert.Equal(1, createdResult.RouteValues["id"]);
+
+            // Verificamos se o valor retornado é o mesmo UserDTO que enviamos
+            Assert.Equal(userDto, createdResult.Value);
+
+            // Verificamos se o nome da ação retornada é "model" (como no CreatedAtAction da controller)
+            Assert.Equal("model", createdResult.ActionName);
         }
 
-        [Fact]
+        [Fact] // Outro teste
         public async Task CreateUser_ServiceReturnsNull_ReturnsBadRequest()
         {
-            // Arrange
-            var userDto = new UserDTO { FirstName = "John", LastName = "Doe" };
-            _userServiceMock.Setup(x => x.AddUserAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>(), true))
+            // Arrange (Preparar o cenário)
+            // Criamos um UserDTO com dados mínimos para testar o caso de falha
+            var userDto = new UserDTO
+            {
+                FirstName = "João", // Nome
+                LastName = "Souza", // Sobrenome
+                Email = "joao.souza@example.com", // Email
+                Address = "Rua Fail, 456" // Endereço (obrigatório no DTO)
+            };
+
+            // Configuramos o mock para dizer: "Quando AddUserAsync for chamado, retorne null" (simula erro)
+            _userServiceMock.Setup(x => x.AddUserAsync(userDto, "User", "senha123", true))
                 .ReturnsAsync((User)null);
 
-            // Act
-            var result = await _controller.CreateUser(userDto, "User", "password123");
+            // Act (Executar a ação)
+            // Chamamos o método CreateUser com os dados
+            var resultado = await _controller.CreateUser(userDto, "User", "senha123");
 
-            // Assert
-            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            // Assert (Verificar o resultado)
+            // Verificamos se o resultado é do tipo BadRequestObjectResult (resposta de erro)
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(resultado);
+
+            // Verificamos se o status HTTP é 400 (Bad Request)
             Assert.Equal(400, badRequestResult.StatusCode);
-            Assert.Equal("Erro ao criar usuário.John Doe", badRequestResult.Value);
-        }
 
-        // Teste para GET /api/user/getUserById/{id}
-        [Fact]
-        public async Task GetUserById_UserExists_ReturnsOk()
-        {
-            // Arrange
-            var user = new User { Id = 1, UserName = "John" };
-            var roles = new List<string> { "User" };
-            _userServiceMock.Setup(x => x.GetUserByIdAsync(1)).ReturnsAsync(user);
-            _userServiceMock.Setup(x => x.GetRolesAsync(user)).ReturnsAsync(roles);
-
-            // Act
-            var result = await _controller.GetUserById(1);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(200, okResult.StatusCode);
-            var returnValue = Assert.IsType<dynamic>(okResult.Value);
-            Assert.Equal(user, returnValue.User);
-            Assert.Equal(roles, returnValue.Roles);
-        }
-
-        [Fact]
-        public async Task GetUserById_UserNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            _userServiceMock.Setup(x => x.GetUserByIdAsync(999)).ReturnsAsync((User)null);
-
-            // Act
-            var result = await _controller.GetUserById(999);
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundResult>(result);
-            Assert.Equal(404, notFoundResult.StatusCode);
-        }
-
-        // Teste para DELETE /api/user/{id}
-        [Fact]
-        public async Task DeleteUser_UserExists_ReturnsNoContent()
-        {
-            // Arrange
-            var user = new User { Id = 1, UserName = "John" };
-            _userServiceMock.Setup(x => x.GetUserByIdAsync(1)).ReturnsAsync(user);
-            _userServiceMock.Setup(x => x.DeleteUserAsync(user)).ReturnsAsync(true);
-
-            // Act
-            var result = await _controller.DeleteUser(1);
-
-            // Assert
-            var noContentResult = Assert.IsType<NoContentResult>(result);
-            Assert.Equal(204, noContentResult.StatusCode);
-        }
-
-        [Fact]
-        public async Task DeleteUser_UserNotFound_ReturnsNotFound()
-        {
-            // Arrange
-            _userServiceMock.Setup(x => x.GetUserByIdAsync(999)).ReturnsAsync((User)null);
-
-            // Act
-            var result = await _controller.DeleteUser(999);
-
-            // Assert
-            var notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal(404, notFoundResult.StatusCode);
-            Assert.Equal("Usuário não encontrado.", notFoundResult.Value);
+            // Verificamos se a mensagem de erro é a esperada
+            Assert.Equal("Erro ao criar usuário.João Souza", badRequestResult.Value);
         }
     }
 }

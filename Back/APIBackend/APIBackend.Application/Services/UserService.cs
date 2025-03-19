@@ -44,18 +44,16 @@ public class UserService : IUserService
         }
     }
 
-
     /// <summary>
     /// Retorna uma lista com todos os usuários do sistema.
     /// </summary>
-    /// <returns>Retorna uma lista de <see cref="UserDTO"/>.</returns>
+    /// <returns>Retorna uma lista de <see cref="UserDTO"/> com todos os usuários.</returns>
     public async Task<List<UserDTO>> GetUsersAsync()
     {
         var users = await _userRepository.GetUsersAsync();
 
         return _mapper.Map<List<UserDTO>>(users);
     }
-
 
     /// <summary>
     /// Retorna o usuário com o id especificado.
@@ -73,10 +71,24 @@ public class UserService : IUserService
         return _mapper.Map<UserDTO>(user);
     }
 
+    /// <summary>
+    /// Retorna o usuário com o nome especificado.
+    /// </summary>
+    /// <param name="name">O nome do usuário a ser retornado.</param>
+    /// <returns>Retorna o objeto <see cref="UserDTO"/> que representa o usuário se encontrado, caso contrário retorna null.</returns>
     public async Task<UserDTO> GetUserByNameAsync(string name)
     {
-        return await _userRepository.GetUserByNameAsync(name);
+        var user = await _userRepository.GetUserByNameAsync(name);
+
+        return _mapper.Map<UserDTO>(user);
     }
+
+    /// <summary>
+    /// Realiza o login de um usuário no sistema.
+    /// </summary>
+    /// <param name="user">O usuário que será autenticado.</param>
+    /// <returns>Retorna uma tarefa assíncrona que representa o processo de autenticação.</returns>
+    /// <exception cref="ArgumentNullException">Lançada quando o usuário é nulo.</exception>
     public async Task AuthAsync(User user)
     {
         if (user == null)
@@ -85,25 +97,48 @@ public class UserService : IUserService
         await _signInManager.SignInAsync(user, isPersistent: false);
     }
 
-    public Task<UserDTO> UpdateUserAsync(UserDTO user)
+    /// <summary>
+    /// Atualiza os dados de um usuário no sistema.
+    /// </summary>
+    /// <param name="userDTO">Os novos dados do usuário.</param>
+    /// <returns>Retorna o objeto <see cref="UserDTO"/> com os dados do usuário atualizado.</returns>
+    /// <exception cref="ArgumentNullException">Lançada quando o objeto <see cref="UserDTO"/> é nulo.</exception>
+    public async Task<UserDTO> UpdateUserAsync(UserDTO userDTO)
     {
+        var user = _mapper.Map<User>(userDTO);
+
         if (user == null)
             throw new ArgumentNullException(nameof(user), "Usuário não pode ser nulo");
 
-        return _userRepository.UpdateUserAsync(user);
+        var userReturn = await _userRepository.UpdateUserAsync(user);
+
+        return _mapper.Map<UserDTO>(userReturn);
     }
 
-    public Task<bool> DeleteUserAsync(UserDTO user)
+    /// <summary>
+    /// Exclui um usuário do sistema.
+    /// </summary>
+    /// <param name="userDTO">Os dados do usuário a ser excluído.</param>
+    /// <returns>Retorna uma tarefa assíncrona que representa o processo de exclusão. Retorna <c>true</c> se o usuário foi excluído com sucesso.</returns>
+    /// <exception cref="ArgumentNullException">Lançada quando o objeto <see cref="UserDTO"/> é nulo.</exception>
+    public Task<bool> DeleteUserAsync(UserDTO userDTO)
     {
-        if (user == null)
-            throw new ArgumentNullException(nameof(user), "Usuário não pode ser nulo");
+        if (userDTO == null)
+            throw new ArgumentNullException(nameof(userDTO), "Usuário não pode ser nulo");
+
+        var user = _mapper.Map<User>(userDTO);
 
         return _userRepository.DeleteUserAsync(user);
     }
 
-    public async Task<List<string>> GetRolesAsync(User user)
+    /// <summary>
+    /// Retorna a lista de funções (roles) associadas a um usuário.
+    /// </summary>
+    /// <param name="userDTO">Os dados do usuário para o qual as funções serão retornadas.</param>
+    /// <returns>Retorna uma lista de strings representando as funções associadas ao usuário.</returns>
+    public async Task<List<string>> GetRolesAsync(UserDTO userDTO)
     {
+        var user = _mapper.Map<User>(userDTO);
         return await _userRepository.GetRolesAsync(user);
     }
-
 }

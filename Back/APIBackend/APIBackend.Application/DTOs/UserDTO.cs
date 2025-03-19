@@ -1,6 +1,5 @@
-using System;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
+using APIBackend.Domain.Identity;
 
 namespace APIBackend.Application.DTOs;
 
@@ -22,5 +21,5 @@ public class UserDTO
     public bool AccessAllowed { get; set; } = false;
     public string? CreditCardNumber { get; set; }
     public int FatureDay { get; set; } = 5;
-    public virtual required ICollection<IdentityUserRole<int>> UserRoles { get; set; }
+    public List<int> RoleIds { get; set; } = new();
 }

@@ -23,5 +23,5 @@ public class User : IdentityUser<int>
     public bool AccessAllowed { get; set; } = false;
     public string? CreditCardNumber { get; set; }
     public int FatureDay { get; set; } = 5;
-    public virtual required ICollection<IdentityUserRole<int>> UserRoles { get; set; }
+    public IEnumerable<UserRole> UserRoles { get; set; }
 }
