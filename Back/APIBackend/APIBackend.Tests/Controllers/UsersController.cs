@@ -25,6 +25,9 @@ namespace APIBackend.Tests.Controllers
             // Arrange (Preparar o cenário): Preparamos os dados para o teste
             var userDto = new UserDTO
             {
+                Password = "Perol@09",
+                Role = "0",
+                SignInAfterCreation = true,
                 FirstName = "Maria", // Nome do usuário
                 LastName = "Silva", // Sobrenome
                 Email = "maria.silva@example.com", // Email válido
@@ -36,6 +39,9 @@ namespace APIBackend.Tests.Controllers
             // Preparamos o que o serviço deverá retornar após a criação do usuário
             var userDtoCriado = new UserDTO
             {
+                Password = userDto.Password,
+                Role = userDto.Role,
+                SignInAfterCreation = userDto.SignInAfterCreation,
                 FirstName = userDto.FirstName, // Nome
                 LastName = userDto.LastName, // Sobrenome
                 Email = userDto.Email, // Email
@@ -45,11 +51,11 @@ namespace APIBackend.Tests.Controllers
             };
 
             // Configuramos o mock: Quando o método AddUserAsync for chamado, ele retorna o userDtoCriado
-            _userServiceMock.Setup(x => x.AddUserAsync(userDto, "User", "senha123", true))
+            _userServiceMock.Setup(x => x.AddUserAsync(userDto))
                 .ReturnsAsync(userDtoCriado); // Retorna o userDtoCriado quando o método for chamado
 
             // Act (Executar a ação): Chama o método CreateUser da controller
-            var resultado = await _controller.CreateUser(userDto, "User", "senha123");
+            var resultado = await _controller.CreateUser(userDto);
 
             // Assert (Verificar o resultado): Verificamos o comportamento esperado
 
@@ -72,18 +78,23 @@ namespace APIBackend.Tests.Controllers
             // Arrange (Preparar o cenário): Preparamos dados mínimos para testar o caso de falha
             var userDto = new UserDTO
             {
-                FirstName = "João", // Nome
-                LastName = "Souza", // Sobrenome
-                Email = "joao.souza@example.com", // Email válido
-                Address = "Rua Fail, 456" // Endereço (obrigatório)
+                Password = "senha123",
+                Role = "User",
+                SignInAfterCreation = true,
+                FirstName = "Maria", // Nome do usuário
+                LastName = "Silva", // Sobrenome
+                Email = "maria.silva@example.com", // Email válido
+                Address = "Rua Teste, 123", // Endereço (obrigatório)
+                ZipCode = 12345, // CEP
+                City = "São Paulo" // Cidade
             };
 
             // Configuramos o mock: Quando AddUserAsync for chamado, ele retornará null (simulando um erro)
-            _userServiceMock.Setup(x => x.AddUserAsync(userDto, "User", "senha123", true))
+            _userServiceMock.Setup(x => x.AddUserAsync(userDto))
                 .ReturnsAsync(null as UserDTO); // Retorna null, indicando falha na criação do usuário
 
             // Act (Executar a ação): Chama o método CreateUser da controller com os dados preparados
-            var resultado = await _controller.CreateUser(userDto, "User", "senha123");
+            var resultado = await _controller.CreateUser(userDto);
 
             // Assert (Verificar o resultado): Verificamos se o erro foi tratado corretamente
 

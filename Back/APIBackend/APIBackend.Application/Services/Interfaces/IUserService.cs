@@ -4,7 +4,7 @@ namespace APIBackend.Application.Services.Interfaces;
 
 public interface IUserService
 {    
-    Task<UserDTO> AddUserAsync(UserDTO userDTO, string role, string password, bool signInAfterCreation = false);
+    Task<UserDTO> AddUserAsync(UserDTO userDTO);
     Task<List<UserDTO>> GetUsersAsync();
     Task<UserDTO> GetUserByIdAsync(int id); 
     Task<UserDTO> GetUserByNameAsync(string name); 

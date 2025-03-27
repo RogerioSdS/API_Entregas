@@ -30,11 +30,4 @@
 	  <ProjectReference Include="..\APIBackend.Repositories\APIBackend.Repositories.csproj" />
 	</ItemGroup>
 
-
-	<ItemGroup>
-		<None Update="APIBackend.db">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		</None>
-	</ItemGroup>
-
 </Project>

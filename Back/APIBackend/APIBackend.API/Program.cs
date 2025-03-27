@@ -45,7 +45,7 @@ builder.Services.AddLogging(logging =>
     logging.ClearProviders();
     logging.AddConsole();
     logging.AddDebug();
-    logging.AddFilter("APIBackend_Entregas", LogLevel.Information); // Garante que logs do namespace sejam exibidos a partir de Information
+    logging.AddFilter("APIBackend", LogLevel.Information); // Garante que logs do namespace sejam exibidos a partir de Information
     logging.AddFilter("Microsoft", LogLevel.Warning); // Logs do Microsoft só a partir de Warning
     logging.AddFilter("System", LogLevel.Warning); // Logs do System só a partir de Warning
 });
@@ -84,6 +84,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minha API v1"));
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseAuthorization(); // Opcional, só se for usar autenticação/autorização

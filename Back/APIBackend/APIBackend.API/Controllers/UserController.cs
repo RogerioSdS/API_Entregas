@@ -16,17 +16,16 @@ namespace APIBackend.API.Controllers
             _userService = userService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] UserDTO model, string role, string password, bool signInAfterCreation = true)
+        [HttpPost("createUser")]
+        public async Task<IActionResult> CreateUser([FromBody] UserDTO model)
         {
-
-            var result = await _userService.AddUserAsync(model, role, password, signInAfterCreation);
+            var result = await _userService.AddUserAsync(model);
             if (result == null)
             {
                 return BadRequest($"Erro ao criar usuário.{model.FirstName} {model.LastName}");
             }
             // analisar se é necessário retornar o usuário.id somente quando for o admin que estiver criando o usuário
-            return CreatedAtAction(nameof(model), model);
+            return  Created("", result);
         }
 
         [HttpGet("getUserById/{id}")]
@@ -55,17 +54,18 @@ namespace APIBackend.API.Controllers
 
         // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
         [HttpGet("getUsers")]
-        public IActionResult GetAllUsers()
+        public async Task<IActionResult> GetAllUsers()
         {
-            var users = _userService.GetUsersAsync();
+            var users = await _userService.GetUsersAsync();
 
-            if (users.Result.Count <= 0)
+            if (users == null || users.Count == 0)
             {
-                return NotFound("Sem usuários cadastrados");
+                return NoContent(); // Retorna 204 se não houver usuários
             }
 
             return Ok(users);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDTO user)

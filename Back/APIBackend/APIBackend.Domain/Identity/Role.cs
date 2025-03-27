@@ -5,19 +5,16 @@ namespace APIBackend.Domain.Identity;
 
 public class Role : IdentityRole<int>
 {
-    public string? Description { get; set; } // Descrição do papel
-    public bool IsActive { get; set; }      // Indica se o papel está ativo ou não
+    public string? Description { get; set; }
+    public bool IsActive { get; set; } = true;
 
-    public Role() { }
+    public Role(){}
 
-    /// <summary>
-    /// Cria um novo papel com o nome especificado e configura a NormalizedName como o nome em maiusculas.
-    /// </summary>
-    /// <param name="roleName">O nome do papel.</param>
-/// 
     public Role(string roleName) : base(roleName)
-    {
-        NormalizedName = roleName.ToUpperInvariant();
-        IsActive = true;
-    }
+{
+    if (string.IsNullOrWhiteSpace(roleName))
+        throw new ArgumentException("O nome do papel não pode ser nulo ou vazio.", nameof(roleName));
+    NormalizedName = roleName.ToUpperInvariant();
+    IsActive = true;
+}
 }

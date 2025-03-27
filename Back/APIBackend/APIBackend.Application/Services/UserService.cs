@@ -28,14 +28,15 @@ public class UserService : IUserService
     /// <param name="signInAfterCreation">Indica se o usuário deve ser autenticado automaticamente após a criação.</param>
     /// <returns>Retorna um objeto <see cref="UserDTO"/> com os dados do usuário criado.</returns>
     /// <exception cref="Exception">Lançada quando ocorre um erro ao adicionar o usuário.</exception>
-    public async Task<UserDTO> AddUserAsync(UserDTO userDTO, string role, string password, bool signInAfterCreation = false)
+    public async Task<UserDTO> AddUserAsync(UserDTO userDTO)
     {
         var user = _mapper.Map<User>(userDTO);
         try
         {
-            var createdUser = await _userRepository.AddUserAsync(user, role, password);
-            if (signInAfterCreation)
+            var createdUser = await _userRepository.AddUserAsync(user);
+            if (user.SignInAfterCreation)
                 await AuthAsync(createdUser);
+                //preciso criar um retorna diferente para quem for admin e quando for user
             return _mapper.Map<UserDTO>(createdUser);
         }
         catch (Exception ex)

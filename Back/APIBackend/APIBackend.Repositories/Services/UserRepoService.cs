@@ -10,12 +10,14 @@ namespace APIBackend.Repositories.Services;
 public class UserRepoService : IUserRepo
 {
     private readonly UserManager<User> _userManager;
+    private readonly RoleManager<Role> _roleManager;
     private readonly ApiDbContext _userContext;
     private readonly List<string> _validRoles;
 
-    public UserRepoService(ApiDbContext context, UserManager<User> userManager, IConfiguration configuration)
+    public UserRepoService(ApiDbContext context, RoleManager<Role> roleManager, UserManager<User> userManager, IConfiguration configuration)
     {
         _userContext = context;
+        _roleManager = roleManager;
         _userManager = userManager;
         _validRoles = configuration.GetSection("UserRoles:ValidRoles").Get<List<string>>() ?? new List<string>();
     }
@@ -30,29 +32,53 @@ public class UserRepoService : IUserRepo
     /// <exception cref="ArgumentNullException">Lançada quando o usuário é nulo.</exception>
     /// <exception cref="ArgumentException">Lançada quando o papel é inválido.</exception>
     /// <exception cref="Exception">Lançada quando ocorre um erro ao criar ou atribuir o papel ao usuário.</exception>
-    public async Task<User> AddUserAsync(User user, string role, string password)
+    public async Task<User> AddUserAsync(User user)
     {
         if (user == null)
             throw new ArgumentNullException(nameof(user), "Usuário não pode ser nulo.");
 
-        if (!_validRoles.Contains(role))
-            throw new ArgumentException($"O papel '{role}' é inválido.", nameof(role));
+        if (!_validRoles.Contains(user.Role))
+            throw new ArgumentException($"O papel '{user.Role}' é inválido.", nameof(user.Role));
 
-        try
+        using (var transaction = await _userContext.Database.BeginTransactionAsync())
         {
-            var identityResult = await _userManager.CreateAsync(user, password);
-            if (!identityResult.Succeeded)
-                throw new Exception($"Erro ao criar usuário: {string.Join(", ", identityResult.Errors.Select(e => e.Description))}");
+            try
+            {
+                // Gerar username único
+                user.UserName = user.FirstName + user.LastName + DateTime.Now.Millisecond;
 
-            var roleResult = await _userManager.AddToRoleAsync(user, role);
-            if (!roleResult.Succeeded)
-                throw new Exception($"Erro ao atribuir role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                // Criar o usuário
+                var identityResult = await _userManager.CreateAsync(user, user.Password);
+                if (!identityResult.Succeeded)
+                    throw new Exception($"Erro ao criar usuário: {string.Join(", ", identityResult.Errors.Select(e => e.Description))}");
 
-            return user;
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"Erro ao adicionar usuário: {ex.Message}", ex);
+                // Verificar se a role existe, criar se necessário
+                if (!await _roleManager.RoleExistsAsync(user.Role))
+                {
+                    var roleResult = await _roleManager.CreateAsync(new Role(user.Role));
+                    if (!roleResult.Succeeded)
+                        throw new Exception($"Erro ao criar role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+                }
+
+                // Associar o usuário à role
+                var roleAddResult = await _userManager.AddToRoleAsync(user, user.Role);
+                if (!roleAddResult.Succeeded)
+                    throw new Exception($"Erro ao atribuir role: {string.Join(", ", roleAddResult.Errors.Select(e => e.Description))}");
+
+                // Se tudo deu certo, confirmar a transação
+                await transaction.CommitAsync();
+                return user;
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Erro ao adicionar usuário: {ex.InnerException?.Message}");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new Exception($"Erro ao adicionar usuário: {ex.Message}");
+            }
         }
     }
 
