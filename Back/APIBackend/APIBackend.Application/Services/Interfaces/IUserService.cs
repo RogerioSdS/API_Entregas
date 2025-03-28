@@ -7,7 +7,7 @@ public interface IUserService
     Task<UserDTO> AddUserAsync(UserDTO userDTO);
     Task<List<UserDTO>> GetUsersAsync();
     Task<UserDTO> GetUserByIdAsync(int id); 
-    Task<UserDTO> GetUserByNameAsync(string name); 
+    Task<List<object>> GetUserByNameAsync(string name); 
     Task<UserDTO> UpdateUserAsync(UserDTO userDTO);
     Task<bool> DeleteUserAsync(UserDTO userDTO);
     Task<List<string>> GetRolesAsync(UserDTO userDTO);

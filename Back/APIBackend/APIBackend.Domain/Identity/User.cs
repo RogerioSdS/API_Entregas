@@ -18,7 +18,7 @@ public class User : IdentityUser<int>
     public string? LastName { get; set; }
     public required string Address { get; set; }
     public string? Complement { get; set; }
-    public int ZipCode { get; set; } = int.MinValue;
+    public string ZipCode { get; set; } = string.Empty;
     public string? City { get; set; }
     public string? Description { get; set; }
     [NotMapped]

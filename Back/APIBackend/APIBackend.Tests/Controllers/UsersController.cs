@@ -25,29 +25,43 @@ namespace APIBackend.Tests.Controllers
             // Arrange (Preparar o cenário): Preparamos os dados para o teste
             var userDto = new UserDTO
             {
+                Email =  "rogeio@rogrio.com",
                 Password = "Perol@09",
-                Role = "0",
+                FirstName = "RogerS",
+                LastName = "soares",
+                Address = "Rua A, 120",
+                Complement = "Jardim B",
+                ZipCode = "15015015",
+                City = "São José do rio preto",
+                Description = "string",
+                Role = "Admin",
                 SignInAfterCreation = true,
-                FirstName = "Maria", // Nome do usuário
-                LastName = "Silva", // Sobrenome
-                Email = "maria.silva@example.com", // Email válido
-                Address = "Rua Teste, 123", // Endereço (obrigatório)
-                ZipCode = 12345, // CEP
-                City = "São Paulo" // Cidade
-            };
-
+                CreditLimit = 0,
+                IsAdmin = true,
+                AccessAllowed = true,
+                CreditCardNumber = "string",
+                FatureDay = 0
+            };   
+        
             // Preparamos o que o serviço deverá retornar após a criação do usuário
             var userDtoCriado = new UserDTO
             {
+                Email = userDto.Email,
                 Password = userDto.Password,
+                FirstName = userDto.FirstName,        
+                LastName = userDto.LastName,
+                Address = userDto.Address,
+                Complement = userDto.Complement,
+                ZipCode = userDto.ZipCode,
+                City = userDto.City,
+                Description = userDto.Description,
                 Role = userDto.Role,
                 SignInAfterCreation = userDto.SignInAfterCreation,
-                FirstName = userDto.FirstName, // Nome
-                LastName = userDto.LastName, // Sobrenome
-                Email = userDto.Email, // Email
-                Address = userDto.Address, // Endereço
-                ZipCode = userDto.ZipCode, // CEP
-                City = userDto.City // Cidade
+                CreditLimit = userDto.CreditLimit,
+                IsAdmin = userDto.IsAdmin,
+                AccessAllowed = userDto.AccessAllowed,
+                CreditCardNumber = userDto.CreditCardNumber,
+                FatureDay = userDto.FatureDay
             };
 
             // Configuramos o mock: Quando o método AddUserAsync for chamado, ele retorna o userDtoCriado
@@ -57,19 +71,14 @@ namespace APIBackend.Tests.Controllers
             // Act (Executar a ação): Chama o método CreateUser da controller
             var resultado = await _controller.CreateUser(userDto);
 
-            // Assert (Verificar o resultado): Verificamos o comportamento esperado
-
-            // Verificamos se o resultado é do tipo CreatedAtActionResult (resposta de sucesso)
-            var createdResult = Assert.IsType<CreatedAtActionResult>(resultado);
+            // Verificamos se o resultado é do tipo CreatedResult (resposta de sucesso)
+            var createdResult = Assert.IsType<CreatedResult>(resultado);
 
             // Verificamos se o status HTTP é 201 (Created), indicando que o recurso foi criado
             Assert.Equal(201, createdResult.StatusCode);
 
             // Verificamos se o valor retornado é o mesmo UserDTO enviado para a criação
-            Assert.Equal(userDto, createdResult.Value);
-
-            // Verificamos se o nome da ação retornada é "model", conforme o definido no CreatedAtAction
-            Assert.Equal("model", createdResult.ActionName);
+            Assert.Equivalent(userDto, createdResult.Value);
         }
 
         [Fact] // Outro teste para o caso de erro
@@ -85,7 +94,7 @@ namespace APIBackend.Tests.Controllers
                 LastName = "Silva", // Sobrenome
                 Email = "maria.silva@example.com", // Email válido
                 Address = "Rua Teste, 123", // Endereço (obrigatório)
-                ZipCode = 12345, // CEP
+                ZipCode = "12345", // CEP
                 City = "São Paulo" // Cidade
             };
 
@@ -105,7 +114,69 @@ namespace APIBackend.Tests.Controllers
             Assert.Equal(400, badRequestResult.StatusCode);
 
             // Verificamos se a mensagem de erro é a esperada
-            Assert.Equal("Erro ao criar usuário.João Souza", badRequestResult.Value);
+            Assert.Equal("Erro ao criar usuário.Maria Silva", badRequestResult.Value);
+        }
+
+        [Fact] // Teste para o método GetUserByName
+        public async Task GetUserByName_ReturnsOkResult()
+        {
+            // Arrange (Preparar o cenário): Preparamos os dados para o teste
+            var userDto = new UserDTO
+            {
+                Email =  "rogeio@rogrio.com",
+                Password = "Perol@09",
+                FirstName = "RogerS",
+                LastName = "soares",
+                Address = "Rua A, 120",
+                Complement = "Jardim B",
+                ZipCode = "15015015",
+                City = "São José do rio preto",
+                Description = "string",
+                Role = "Admin",
+                SignInAfterCreation = true,
+                CreditLimit = 0,
+                IsAdmin = true,
+                AccessAllowed = true,
+                CreditCardNumber = "string",
+                FatureDay = 0
+            };   
+        
+            // Preparamos o que o serviço deverá retornar após a criação do usuário
+            var userDtoCriado = new UserDTO
+            {
+                Email = userDto.Email,
+                Password = userDto.Password,
+                FirstName = userDto.FirstName,        
+                LastName = userDto.LastName,
+                Address = userDto.Address,
+                Complement = userDto.Complement,
+                ZipCode = userDto.ZipCode,
+                City = userDto.City,
+                Description = userDto.Description,
+                Role = userDto.Role,
+                SignInAfterCreation = userDto.SignInAfterCreation,
+                CreditLimit = userDto.CreditLimit,
+                IsAdmin = userDto.IsAdmin,
+                AccessAllowed = userDto.AccessAllowed,
+                CreditCardNumber = userDto.CreditCardNumber,
+                FatureDay = userDto.FatureDay
+            };
+
+            _userServiceMock.Setup(x => x.GetUserByNameAsync(userDto.FirstName))
+                .ReturnsAsync(new List<object> { userDtoCriado });
+
+            var resultadoFindName = await _controller.GetUserByName(userDto.FirstName);
+
+            // Assert (Verificar o resultado): Verificamos se o resultado foi retornado corretamente
+            Assert.IsType<OkObjectResult>(resultadoFindName);
+
+            var findResult = Assert.IsType<OkObjectResult>(resultadoFindName);
+            
+            // Verificamos se o status HTTP é 201 (Created), indicando que o recurso foi criado
+            Assert.Equal(200, findResult.StatusCode);
+
+            // Verificamos se o valor retornado é o mesmo UserDTO enviado para a criação
+            Assert.Equivalent(userDto, findResult.Value);
         }
     }
 }

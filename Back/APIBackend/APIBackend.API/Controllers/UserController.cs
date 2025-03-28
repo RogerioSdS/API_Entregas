@@ -46,10 +46,10 @@ namespace APIBackend.API.Controllers
             var user = await _userService.GetUserByNameAsync(name);
             if (user == null)
             {
-                return NotFound();
-            }
+                return NotFound("Usuario não encontrado!");
+            }            
 
-            return Ok(new { User = user, Roles = await _userService.GetRolesAsync(user) });
+            return Ok(user);
         }
 
         // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT

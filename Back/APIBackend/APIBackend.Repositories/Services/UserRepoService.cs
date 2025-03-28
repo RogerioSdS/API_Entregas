@@ -110,8 +110,7 @@ public class UserRepoService : IUserRepo
     /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
     public async Task<User> GetUserByNameAsync(string name)
     {
-        var user = await _userManager.FindByNameAsync(name);
-        return user ?? throw new Exception("Usuário não encontrado.");
+        return await _userManager.Users.FirstOrDefaultAsync(u => u.FirstName == name) ?? null;
     }
 
     /// <summary>

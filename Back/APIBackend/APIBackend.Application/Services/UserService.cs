@@ -77,12 +77,28 @@ public class UserService : IUserService
     /// </summary>
     /// <param name="name">O nome do usuário a ser retornado.</param>
     /// <returns>Retorna o objeto <see cref="UserDTO"/> que representa o usuário se encontrado, caso contrário retorna null.</returns>
-    public async Task<UserDTO> GetUserByNameAsync(string name)
-    {
-        var user = await _userRepository.GetUserByNameAsync(name);
+   public async Task<List<object>> GetUserByNameAsync(string name)
+{
+    var allUsers = await _userRepository.GetUsersAsync();
+    var userFound = allUsers.FindAll(u => u.FirstName == name);
 
-        return _mapper.Map<UserDTO>(user);
+    if (!userFound.Any())
+    {
+        return new List<object>(); // Retorna uma lista vazia para indicar que nenhum usuário foi encontrado
     }
+
+    var usersWithRoles = new List<object>();
+
+    foreach (var user in userFound)
+    {
+        var userConvert = _mapper.Map<UserDTO>(user);        
+        var roles = await GetRolesAsync(userConvert);
+        usersWithRoles.Add(new { User = _mapper.Map<UserDTO>(user), Roles = roles });
+    }
+
+    return usersWithRoles;
+}
+
 
     /// <summary>
     /// Realiza o login de um usuário no sistema.
@@ -143,3 +159,4 @@ public class UserService : IUserService
         return await _userRepository.GetRolesAsync(user);
     }
 }
+ 
