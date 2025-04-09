@@ -26,7 +26,7 @@ namespace APIBackend.Tests.Controllers
             var userDto = new UserDTO
             {
                 Email = "r",
-                Password = "Perola09",
+                Password = "",
                 FirstName = "RogerS",
                 LastName = "soares",
                 Address = "Rua A, 120",
@@ -76,7 +76,7 @@ namespace APIBackend.Tests.Controllers
             var userDto = new UserDTO
             {
                 Email = "r",
-                Password = "Perola09",
+                Password = "",
                 FirstName = "RogerS",
                 LastName = "soares",
                 Address = "Rua A, 120",
@@ -99,7 +99,7 @@ namespace APIBackend.Tests.Controllers
             var userDto = new UserDTO
             {
                 Email = "rogeio@rogrio.com",
-                Password = "Perol@09",
+                Password = "",
                 FirstName = "Roger",
                 LastName = "soares",
                 Address = "Rua A, 120",
@@ -138,7 +138,7 @@ namespace APIBackend.Tests.Controllers
             // Converter findResult.Value para List<object> e acessar o primeiro item
             var resultList = Assert.IsType<List<object>>(findResult.Value);
             var firstItem = Assert.IsType<UserDTO>(resultList[0]);
-            
+
             Assert.Equal(userDtoCriado.FirstName, firstItem.FirstName);
 
             //Assert.Equivalent(userDto, findResult.Value);
