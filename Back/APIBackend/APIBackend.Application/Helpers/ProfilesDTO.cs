@@ -15,6 +15,7 @@ namespace APIBackend.Application.Helpers
             /// Essa mapeamento é realizado usando a biblioteca AutoMapper.
             /// </remarks>
             CreateMap<User, UserDTO>().ReverseMap();
+            CreateMap<UserUpdateFromUserDTO, User>().ReverseMap();
         }
 
         /// <summary>

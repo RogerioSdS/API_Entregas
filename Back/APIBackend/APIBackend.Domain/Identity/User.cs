@@ -6,17 +6,15 @@ namespace APIBackend.Domain.Identity;
 
 public class User : IdentityUser<int>
 {
-    [Required(ErrorMessage = "The Email field is required.")]
     [DataType(DataType.EmailAddress)]
     [EmailAddress(ErrorMessage = "Invalid email format.")]
     public override string? Email { get; set; } // Sobrescreve a propriedade da classe base
     [NotMapped]// Ignora no banco de dados
-    [Required(ErrorMessage = "The Password field is required.")]
     [DataType(DataType.Password)]
     public required string Password { get; set; }
     public required string FirstName { get; set; }
     public string? LastName { get; set; }
-    public required string Address { get; set; }
+    public string? Address { get; set; }
     public string? Complement { get; set; }
     public string ZipCode { get; set; } = string.Empty;
     public string? City { get; set; }

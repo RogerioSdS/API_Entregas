@@ -6,11 +6,27 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace APIBackend.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class Migration20250327_v104 : Migration
+    public partial class Migration20250327_v105 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<string>(
+                name: "ZipCode",
+                table: "AspNetUsers",
+                type: "TEXT",
+                nullable: false,
+                oldClrType: typeof(int),
+                oldType: "INTEGER");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Address",
+                table: "AspNetUsers",
+                type: "TEXT",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "TEXT");
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "AssignmentDate",
                 table: "AspNetUserRoles",
@@ -26,6 +42,24 @@ namespace APIBackend.Repositories.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AlterColumn<int>(
+                name: "ZipCode",
+                table: "AspNetUsers",
+                type: "INTEGER",
+                nullable: false,
+                oldClrType: typeof(string),
+                oldType: "TEXT");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Address",
+                table: "AspNetUsers",
+                type: "TEXT",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "TEXT",
+                oldNullable: true);
+
             migrationBuilder.AlterColumn<DateTime>(
                 name: "AssignmentDate",
                 table: "AspNetUserRoles",

@@ -92,6 +92,18 @@ public class UserRepoService : IUserRepo
     }
 
     /// <summary>
+    /// Busca um usuário pelo seu email.
+    /// </summary>
+    /// <param name="email">Email do usuário a ser buscado.</param>
+    /// <returns>O usuário encontrado.</returns>
+    /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
+
+    public async Task<User> GetUserByEmailAsync(string email)
+    {
+        return await _userManager.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new Exception("Usuário não encontrado.");
+    }
+
+    /// <summary>
     /// Busca um usuário pelo seu ID.
     /// </summary>
     /// <param name="id">ID do usuário.</param>
@@ -114,17 +126,14 @@ public class UserRepoService : IUserRepo
     }
 
     /// <summary>
-    /// Atualiza os dados de um usuário.
+    /// Atualiza os dados de um usuário no sistema.
     /// </summary>
-    /// <param name="user">Usuário a ser atualizado.</param>
-    /// <returns>O usuário atualizado.</returns>
-    /// <exception cref="Exception">Lançada quando o usuário não é encontrado ou quando ocorre um erro ao atualizar.</exception>
+    /// <param name="user">Usuário com os dados atualizados.</param>
+    /// <returns>Retorna o usuário atualizado se a operação for bem-sucedida, caso contrário retorna null.</returns>
+    /// <exception cref="Exception">Lançada quando ocorre um erro ao atualizar o usuário.</exception>
+
     public async Task<User> UpdateUserAsync(User user)
     {
-        var userToUpdate = await _userManager.GetUserIdAsync(user);
-        if (userToUpdate == null)
-            throw new Exception("Usuário não encontrado.");
-
         var result = await _userManager.UpdateAsync(user);
         if (!result.Succeeded)
             throw new Exception($"Erro ao atualizar usuário: {string.Join(", ", result.Errors.Select(e => e.Description))}");
@@ -140,12 +149,7 @@ public class UserRepoService : IUserRepo
     /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
     public async Task<bool> DeleteUserAsync(User user)
     {
-        var userToDelete = await _userManager.GetUserIdAsync(user);
-        if (userToDelete == null)
-            throw new Exception("Usuário não encontrado.");
-
         await _userManager.DeleteAsync(user);
-
         return true;
     }
 

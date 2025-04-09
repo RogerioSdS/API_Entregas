@@ -5,6 +5,7 @@ namespace APIBackend.Repositories.Interfaces;
 public interface IUserRepo
 {
     public Task<List<User>> GetUsersAsync();
+    public Task<User>? GetUserByEmailAsync(string email);
     public Task<User>? GetUserByIdAsync(int id);
     public Task<User>? GetUserByNameAsync(string name);
     public Task<User> AddUserAsync(User user);
