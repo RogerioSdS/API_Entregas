@@ -1,13 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35728.132 d17.12
+VisualStudioVersion = 17.12.35728.132
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIBackend.Application", "APIBackend.Application\APIBackend.Application.csproj", "{B2129378-8315-4253-A7BA-9E2710086C66}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIBackend.API", "APIBackend.API\APIBackend.API.csproj", "{B2129378-8315-4253-A7BA-9E2710086C66}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIBackend.Repositories", "APIBackend.Repositories\APIBackend.Repositories.csproj", "{7B29F94E-475F-467A-AF62-4283BE865DC4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIBackend.Domain", "APIBackend.Domain\APIBackend.Domain.csproj", "{84E88AB9-6F17-49D0-8479-94647BEF5137}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIBackend.Application", "APIBackend.Application\APIBackend.Application.csproj", "{2DE4A35A-56CC-40AB-837B-FE653B75DE40}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIBackend.Tests", "APIBackend.Tests\APIBackend.Tests.csproj", "{613ACBAF-DD09-4F5A-9B5C-94543DD01288}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +31,14 @@ Global
 		{84E88AB9-6F17-49D0-8479-94647BEF5137}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84E88AB9-6F17-49D0-8479-94647BEF5137}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84E88AB9-6F17-49D0-8479-94647BEF5137}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DE4A35A-56CC-40AB-837B-FE653B75DE40}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DE4A35A-56CC-40AB-837B-FE653B75DE40}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DE4A35A-56CC-40AB-837B-FE653B75DE40}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DE4A35A-56CC-40AB-837B-FE653B75DE40}.Release|Any CPU.Build.0 = Release|Any CPU
+		{613ACBAF-DD09-4F5A-9B5C-94543DD01288}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{613ACBAF-DD09-4F5A-9B5C-94543DD01288}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{613ACBAF-DD09-4F5A-9B5C-94543DD01288}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{613ACBAF-DD09-4F5A-9B5C-94543DD01288}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

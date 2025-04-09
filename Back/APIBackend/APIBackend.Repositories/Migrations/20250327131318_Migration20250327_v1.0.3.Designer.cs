@@ -3,6 +3,7 @@ using System;
 using APIBackend.Repositories.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIBackend.Repositories.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250327131318_Migration20250327_v1.0.3")]
+    partial class Migration20250327_v103
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -66,6 +69,7 @@ namespace APIBackend.Repositories.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Address")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("City")
@@ -146,9 +150,8 @@ namespace APIBackend.Repositories.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ZipCode")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("ZipCode")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -176,7 +179,7 @@ namespace APIBackend.Repositories.Migrations
                     b.Property<DateTime?>("AssignmentDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT")
-                        .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')");
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("UserId", "RoleId");
 

@@ -1,35 +1,51 @@
 using System.Reflection;
 using APIBackend.Application.Services.Interfaces;
+using APIBackend.Application.Services;
+using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
 using APIBackend.Repositories.Services;
+using AutoMapper; // Importante para o AutoMapper
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using APIBackend.Application.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Adicionando o AutoMapper
+builder.Services.AddAutoMapper(typeof(ProfilesDTO).Assembly);// Registra todos os profiles no assembly
 
 // Adicione serviços para controllers
 builder.Services.AddControllers();
 
 //Configuração do banco de dados
 builder.Services.AddDbContext<ApiDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"))); 
+    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddIdentity<User, Role>(options =>
+{
+    options.Password.RequireUppercase = true; // Pelo menos uma letra maiúscula
+    options.Password.RequireDigit = true;     // Pelo menos um número
+    options.Password.RequireNonAlphanumeric = true; // Pelo menos um caractere especial
+    options.Password.RequiredLength = 8;      // Mínimo de 8 caracteres
+    options.Password.RequiredUniqueChars = 1; // Pelo menos 1 caractere único
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddEntityFrameworkStores<ApiDbContext>()
+.AddDefaultTokenProviders();
 
 // Adicionando a injeção de dependência
-builder.Services.AddScoped<IUserServices, UserService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepoService>();
-builder.Services.AddScoped<IAuthServices, AuthService>();
-builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
 
-
-//Adicionando loggs na injecao de dependencia
-// Configurar logging
+// Adicionando loggs na injecao de dependencia
 builder.Services.AddLogging(logging =>
 {
     logging.ClearProviders();
     logging.AddConsole();
     logging.AddDebug();
-    logging.AddFilter("ApiBackend_Entregas", LogLevel.Information); // Garante que logs do namespace sejam exibidos a partir de Information
+    logging.AddFilter("APIBackend", LogLevel.Information); // Garante que logs do namespace sejam exibidos a partir de Information
     logging.AddFilter("Microsoft", LogLevel.Warning); // Logs do Microsoft só a partir de Warning
     logging.AddFilter("System", LogLevel.Warning); // Logs do System só a partir de Warning
 });
@@ -68,6 +84,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minha API v1"));
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseAuthorization(); // Opcional, só se for usar autenticação/autorização

@@ -54,3 +54,6 @@ Backup/
 # Ignorar pastas específicas do sistema operacional
 .DS_Store
 Thumbs.db
+/Back/APIBackend/APIBackend.API/APIBackend.db
+*.db-shm
+*.db-wal
