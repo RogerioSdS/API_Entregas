@@ -13,4 +13,5 @@ public interface IUserService
     Task<UserUpdateFromAdminDTO> UpdateUserFromAdminAsync(UserUpdateFromAdminDTO userDTO);
     Task<bool> DeleteUserAsync(int id);
     Task<List<string>> GetRolesAsync(UserDTO userDTO);
+
 }

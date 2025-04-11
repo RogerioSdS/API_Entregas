@@ -16,12 +16,27 @@ namespace APIBackend.API.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Cria um novo usuário no sistema.
+        /// </summary>
+        /// <param name="model">O objeto de transferência contendo os detalhes do usuário a ser criado.</param>
+        /// <returns>
+        /// Um <see cref="IActionResult"/> indicando o resultado da operação:
+        /// <list type="bullet">
+        /// <item><description>Retorna <see cref="BadRequestObjectResult"/> (400) se o estado do modelo for inválido ou se houver um erro ao criar o usuário.</description></item>
+        /// <item><description>Retorna <see cref="CreatedResult"/> (201) com os detalhes do usuário criado se a operação for bem-sucedida.</description></item>
+        /// </list>
+        /// </returns>
+        /// <remarks>
+        /// Certifique-se de que o <paramref name="model"/> contém dados válidos antes de chamar este método.
+        /// A resposta pode incluir lógica adicional para restringir certos detalhes com base na função do usuário (por exemplo, administrador).
+        /// </remarks>
         [HttpPost("createUser")]
         public async Task<IActionResult> CreateUser([FromBody] UserDTO model)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); // Retorna 400 com detalhes da validação
+                return BadRequest(ModelState); 
             }
 
             var result = await _userService.AddUserAsync(model);
