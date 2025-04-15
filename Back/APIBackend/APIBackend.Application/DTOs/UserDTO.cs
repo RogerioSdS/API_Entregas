@@ -19,6 +19,7 @@ public class UserDTO
   public string ZipCode { get; set; } = string.Empty;
   public string? City { get; set; }
   public string? Description { get; set; }
+  public bool IsBlocked { get; set; } = false;
 
   //propriedade que serão preenchidas somente quando o usuário for admin por isso não será usado no DTO
   /* 

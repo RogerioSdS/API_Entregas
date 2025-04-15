@@ -13,6 +13,7 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
     }
 
     public DbSet<User> Users { get; set; } //não seria necessário utiliza-lo, pois o IdentityDbContext já possui um DbSet de User, e esta sendo passado como parametro para o IdentityDbContext
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,5 +55,10 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
                 entity.Property(r => r.Description).HasMaxLength(200);
                 entity.Property(r => r.IsActive).HasDefaultValue(true);
             });
+        
+        modelBuilder.Entity<RefreshToken>()
+                .HasOne(rt => rt.User)
+                .WithMany()
+                .HasForeignKey(rt => rt.UserId);
     }
 }

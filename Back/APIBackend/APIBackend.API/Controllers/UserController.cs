@@ -1,10 +1,12 @@
 using APIBackend.Application.DTOs;
 using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIBackend.API.Controllers
 {
+    [Authorize] //Com o uso ASP.NET Identity com JWT (gerado no AuthService), o middleware de autenticação JWT (configurado em Program.cs) valida o token automaticamente.
     [ApiController]
     [Route("api/user")]
     public class UsersController : ControllerBase
@@ -31,16 +33,19 @@ namespace APIBackend.API.Controllers
         /// Certifique-se de que o <paramref name="model"/> contém dados válidos antes de chamar este método.
         /// A resposta pode incluir lógica adicional para restringir certos detalhes com base na função do usuário (por exemplo, administrador).
         /// </remarks>
+        [AllowAnonymous]
         [HttpPost("createUser")]
         public async Task<IActionResult> CreateUser([FromBody] UserDTO model)
         {
+            // Verifica se o modelo recebido (ex.: DTO com dados enviados pelo cliente) atende às regras de validação definidas
+            // (ex.: [Required], [StringLength], [EmailAddress] em propriedades do DTO).
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); 
+                return BadRequest(ModelState);
             }
 
             var result = await _userService.AddUserAsync(model);
-            
+
             if (result == null)
             {
                 return BadRequest($"Erro ao criar usuário.{model.FirstName} {model.LastName}");
@@ -74,6 +79,7 @@ namespace APIBackend.API.Controllers
         }
 
         // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
+        [Authorize(Roles = "admin")]
         [HttpGet("getAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
@@ -109,7 +115,7 @@ namespace APIBackend.API.Controllers
             return Ok(result);
         }
 
-
+        [Authorize(Roles = "admin")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateFromAdminDTO model)
         {
@@ -132,6 +138,7 @@ namespace APIBackend.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "admin")]
         [HttpDelete("DeleteUser")]
         public async Task<IActionResult> DeleteUser([FromQuery] int id)
         {

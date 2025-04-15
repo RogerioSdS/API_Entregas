@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using APIBackend.Application.Services.Interfaces;
 using APIBackend.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace APIBackend.API.Controllers
 {
@@ -13,9 +14,11 @@ namespace APIBackend.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(IAuthService autService)
+        public AuthController(IAuthService autService, IConfiguration configuration)
         {
+            _configuration = configuration;
             _authService = autService;
         }
 
@@ -33,9 +36,17 @@ namespace APIBackend.API.Controllers
             {
                 return Unauthorized("Credenciais inválidas.");
             }
+            
+            if (user.IsBlocked)
+            {
+                return Unauthorized("Usuário bloqueado.");
+            }
 
+            //iniciar o fluxo de gerar tokenJWT e refresh token
+
+            if(await ValidateRefreshToken())
             // Gerar o JWT
-            var token = GenerateJwtToken(user);
+            var token = await _authService.GenerateJwtTokenAsync(user);
             return Ok(new { Token = token });
         }
 
@@ -62,9 +73,8 @@ namespace APIBackend.API.Controllers
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-
         [HttpPost("refresh-token")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenDTO model)
+        public async Task<IActionResult> ValidateRefreshToken([FromBody] RefreshTokenDTO model)
         {
             var userId = await _authService.ValidateRefreshTokenAsync(model.RefreshToken);
             if (userId == null)
@@ -78,6 +88,39 @@ namespace APIBackend.API.Controllers
             await _authService.SaveRefreshTokenAsync(user.Id, newRefreshToken);
 
             return Ok(new { Token = newToken, RefreshToken = newRefreshToken });
+        }
+
+        // Método para gerar o refresh token (adicione isso ao AuthService)
+        private string GenerateRefreshToken()
+        {
+            // Cria uma string única e segura usando GUID (alternativa: use System.Security.Cryptography para bytes aleatórios)
+            var randomBytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+            var refreshToken = Convert.ToBase64String(randomBytes);
+            return refreshToken;
+
+        }
+
+        // Exemplo de uso no login (em AuthenticateUserAsync ou endpoint de login)
+        public async Task<(string JwtToken, string RefreshToken)> CreateRefreshToken(string email, string password)
+        {
+            // Valida o usuário (como já faz em AuthenticateUserAsync)
+            var userDTO = await AuthenticateUserAsync(email, password);
+            if (userDTO == null)
+            {
+                return (null, null); // Falha na autenticação
+            }
+
+            // Gera o JWT
+            var jwtToken = await GenerateJwtTokenAsync(userDTO);
+
+            // Gera o refresh token
+            var refreshToken = GenerateRefreshToken();
+
+            // Salva o refresh token no banco com userId e expiração (usa seu método existente)
+            await SaveRefreshTokenAsync(userDTO.Id, refreshToken);
+
+            // Retorna ambos para o cliente
+            return (jwtToken, refreshToken);
         }
     }
 }

@@ -34,6 +34,7 @@ public class UserRepoService : IUserRepo
     /// <exception cref="Exception">Lançada quando ocorre um erro ao criar ou atribuir o papel ao usuário.</exception>
     public async Task<User> AddUserAsync(User user)
     {
+        //analisar se essa regra de negocio não deve ser feita na service da Application
         if (user == null)
             throw new ArgumentNullException(nameof(user), "Usuário não pode ser nulo.");
 

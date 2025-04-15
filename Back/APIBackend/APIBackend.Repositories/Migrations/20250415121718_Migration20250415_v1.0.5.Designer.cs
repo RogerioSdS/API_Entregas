@@ -11,14 +11,43 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIBackend.Repositories.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20250402125241_Migration20250327_v1.0.5")]
-    partial class Migration20250327_v105
+    [Migration("20250415121718_Migration20250415_v1.0.5")]
+    partial class Migration20250415_v105
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+
+            modelBuilder.Entity("APIBackend.Domain.Identity.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
 
             modelBuilder.Entity("APIBackend.Domain.Identity.Role", b =>
                 {
@@ -270,6 +299,17 @@ namespace APIBackend.Repositories.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("APIBackend.Domain.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("APIBackend.Domain.Identity.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("APIBackend.Domain.Identity.UserRole", b =>

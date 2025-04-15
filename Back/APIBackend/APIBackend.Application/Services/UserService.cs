@@ -1,10 +1,11 @@
 using APIBackend.Application.DTOs;
+using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 
-namespace APIBackend.Application.Services.Interfaces;
+namespace APIBackend.Application.Services;
 
 public class UserService : IUserService
 {
@@ -60,6 +61,20 @@ public class UserService : IUserService
         }
 
         return _mapper.Map<List<UserDTO>>(users);
+    }
+
+    public async Task<UserDTO> GetUserByEmailAsync(string email)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(email);      
+
+        return _mapper.Map<UserDTO>(user);
+    }
+
+    public async Task<LoginDTO> GetUserByEmailToLoginAsync(string email)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(email);      
+
+        return _mapper.Map<LoginDTO>(user);        
     }
 
     /// <summary>
@@ -188,5 +203,5 @@ public class UserService : IUserService
     {
         var user = _mapper.Map<User>(userDTO);
         return await _userRepository.GetRolesAsync(user);
-    }
+    }    
 }
