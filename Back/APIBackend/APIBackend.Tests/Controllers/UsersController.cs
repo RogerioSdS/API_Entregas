@@ -4,20 +4,32 @@ using APIBackend.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
+using Microsoft.Extensions.Configuration;
+
 
 namespace APIBackend.Tests.Controllers
 {
     public class UsersControllerTests
     {
-        private readonly Mock<IUserService> _userServiceMock; // Mock para simular o IUserService
-        private readonly UsersController _controller; // Controller que vamos testar
+        private readonly Mock<IUserService> _userServiceMock;
+        private readonly UsersController _controller;
+        private readonly string _password;
+        private readonly IConfiguration _configuration;
 
-        // Construtor: prepara o ambiente antes de cada teste
         public UsersControllerTests()
         {
-            _userServiceMock = new Mock<IUserService>(); // Cria o mock do IUserService
-            _controller = new UsersController(_userServiceMock.Object); // Passa o mock para a controller
+            // Inicializar a configuração com o appsettings.json
+            _configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            _userServiceMock = new Mock<IUserService>();
+            _controller = new UsersController(_userServiceMock.Object);
+            _password = _configuration.GetSection("Password:Key").Value ?? string.Empty;
         }
+
+        #region "CreateUser"
 
         [Fact] // Marca que esse método é um teste
         public async Task CreateUser_ValidData_ReturnsCreatedAtAction()
@@ -26,7 +38,7 @@ namespace APIBackend.Tests.Controllers
             var userDto = new UserDTO
             {
                 Email = "r",
-                Password = "",
+                Password = _password,
                 FirstName = "RogerS",
                 LastName = "soares",
                 Address = "Rua A, 120",
@@ -68,15 +80,16 @@ namespace APIBackend.Tests.Controllers
             // Verificamos se o valor retornado é o mesmo UserDTO enviado para a criação
             Assert.Equivalent(userDto, createdResult.Value);
         }
+        #endregion
 
-
+        #region "CreateInvalidUser
         [Fact]
         public async Task CreateUser_InvalidEmail_ReturnsBadRequest()
         {
             var userDto = new UserDTO
             {
                 Email = "r",
-                Password = "",
+                Password = _password,
                 FirstName = "RogerS",
                 LastName = "soares",
                 Address = "Rua A, 120",
@@ -92,6 +105,9 @@ namespace APIBackend.Tests.Controllers
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(resultado);
             Assert.Equal(400, badRequestResult.StatusCode);
         }
+        #endregion
+
+        #region "GetUsersByName"
 
         [Fact]
         public async Task GetUserByName_ReturnsOkResult()
@@ -99,7 +115,7 @@ namespace APIBackend.Tests.Controllers
             var userDto = new UserDTO
             {
                 Email = "rogeio@rogrio.com",
-                Password = "",
+                Password = _password,
                 FirstName = "Roger",
                 LastName = "soares",
                 Address = "Rua A, 120",
@@ -143,5 +159,100 @@ namespace APIBackend.Tests.Controllers
 
             //Assert.Equivalent(userDto, findResult.Value);
         }
+        #endregion
+
+        #region "UpdateUser"
+        [Fact]
+        public async Task UpdateUser_ReturnsOkResult()
+        {
+            var userDto = new UserUpdateFromUserDTO
+            {
+                Email = "rogerio@rorer.com",
+                Password = _password,
+                FirstName = "Rogerio",
+                LastName = "Soares",
+                Address = "Rua A, 120",
+                Complement = "Jardim B",
+                ZipCode = "15015015",
+                City = "São José do rio preto",
+                Description = "string"
+            };
+
+            var userDtoAtualizado = new UserUpdateFromUserDTO
+            {
+                Email = userDto.Email + "update",
+                Password = userDto.Password,
+                FirstName = userDto.FirstName,
+                LastName = userDto.LastName,
+                Address = userDto.Address,
+                Complement = userDto.Complement,
+                ZipCode = userDto.ZipCode,
+                City = userDto.City,
+                Description = userDto.Description
+            };
+
+            _userServiceMock.Setup(x => x.UpdateUserFromUserAsync(userDto))
+                .ReturnsAsync(userDtoAtualizado);
+
+            var result = await _controller.UpdateUserDetails(userDto);
+
+            var updatedResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(200, updatedResult.StatusCode);
+            Assert.Equal(userDtoAtualizado, updatedResult.Value);
+
+            var returnedDto = Assert.IsType<UserUpdateFromUserDTO>(updatedResult.Value);
+            Assert.Equal(userDtoAtualizado.Email, returnedDto.Email);
+            Assert.Equal(userDtoAtualizado.FirstName, returnedDto.FirstName);
+        }
+
+        [Fact]
+        public async Task UpdateUser_ReturnsErrorResult_WhenUpdateFails()
+        {
+            var userDto = new UserUpdateFromUserDTO
+            {
+                Email = "rogerio@rorer.com",
+                Password = _password,
+                FirstName = "Rogerio",
+                LastName = "Soares",
+                Address = "Rua A, 120",
+                Complement = "Jardim B",
+                ZipCode = "15015015",
+                City = "São José do rio preto",
+                Description = "string"
+            };
+
+            // Configurar o mock para lançar uma exceção
+            _userServiceMock.Setup(x => x.UpdateUserFromUserAsync(userDto))
+                .ThrowsAsync(new Exception("Falha ao atualizar usuário"));
+
+            // Act & Assert
+            // Dependendo de como seu controlador lida com exceções, você pode testar de várias formas:
+
+            // Opção 1: Se o controlador retorna um status de erro específico
+            var result = await _controller.UpdateUserDetails(userDto);
+            var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(400, badRequestResult.StatusCode);
+
+            // Opção 2: Se o controlador deixa a exceção propagar
+            await Assert.ThrowsAsync<Exception>(() => _controller.UpdateUserDetails(userDto));
+        }
+        #endregion
+
+        #region "DeleteUser"
+        [Fact]
+        public async Task DeleteUser_ValidId_ReturnsOkResult()
+        {
+            int userId = 1;
+
+            _userServiceMock.Setup(x => x.DeleteUserAsync(userId))
+                .ReturnsAsync(true);
+
+            var result = await _controller.DeleteUser(userId);
+
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            Assert.Equal(200, okResult.StatusCode);
+        }
+        #endregion
+    
     }
 }

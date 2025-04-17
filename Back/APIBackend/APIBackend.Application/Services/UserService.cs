@@ -1,10 +1,11 @@
 using APIBackend.Application.DTOs;
+using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 
-namespace APIBackend.Application.Services.Interfaces;
+namespace APIBackend.Application.Services;
 
 public class UserService : IUserService
 {
@@ -62,6 +63,20 @@ public class UserService : IUserService
         return _mapper.Map<List<UserDTO>>(users);
     }
 
+    public async Task<UserDTO> GetUserByEmailAsync(string email)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(email);      
+
+        return _mapper.Map<UserDTO>(user);
+    }
+
+    public async Task<LoginDTO> GetUserByEmailToLoginAsync(string email)
+    {
+        var user = await _userRepository.GetUserByEmailAsync(email);      
+
+        return _mapper.Map<LoginDTO>(user);        
+    }
+
     /// <summary>
     /// Retorna o usuário com o id especificado.
     /// </summary>
@@ -114,10 +129,8 @@ public class UserService : IUserService
     /// <exception cref="ArgumentNullException">Lançada quando o usuário é nulo.</exception>
     public async Task AuthAsync(User user)
     {
-        if (user == null)
-            throw new ArgumentNullException(nameof(user), "Usuário não pode ser nulo");
-
-        await _signInManager.SignInAsync(user, isPersistent: false);
+        // apontar para auth controller
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -188,5 +201,5 @@ public class UserService : IUserService
     {
         var user = _mapper.Map<User>(userDTO);
         return await _userRepository.GetRolesAsync(user);
-    }
+    }    
 }

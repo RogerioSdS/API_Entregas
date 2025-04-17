@@ -12,13 +12,14 @@ public class UserDTO
   public required string Password { get; set; }
   public required string FirstName { get; set; }
   public string? LastName { get; set; }
-  public required string Role { get; set; }
+  public string Role { get; set; } = "Admin";
   //propriedade que serão preenchidas somente quando for completar o cadastro do usuário
   public string? Address { get; set; }
   public string? Complement { get; set; }
   public string ZipCode { get; set; } = string.Empty;
   public string? City { get; set; }
   public string? Description { get; set; }
+  public bool IsBlocked { get; set; } = false;
 
   //propriedade que serão preenchidas somente quando o usuário for admin por isso não será usado no DTO
   /* 

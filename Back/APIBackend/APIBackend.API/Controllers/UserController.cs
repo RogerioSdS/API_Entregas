@@ -1,10 +1,13 @@
+using System.Security.Claims;
 using APIBackend.Application.DTOs;
 using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace APIBackend.API.Controllers
 {
+    //[Authorize] //Com o uso ASP.NET Identity com JWT (gerado no AuthService), o middleware de autenticação JWT (configurado em Program.cs) valida o token automaticamente.
     [ApiController]
     [Route("api/user")]
     public class UsersController : ControllerBase
@@ -16,16 +19,34 @@ namespace APIBackend.API.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Cria um novo usuário no sistema.
+        /// </summary>
+        /// <param name="model">O objeto de transferência contendo os detalhes do usuário a ser criado.</param>
+        /// <returns>
+        /// Um <see cref="IActionResult"/> indicando o resultado da operação:
+        /// <list type="bullet">
+        /// <item><description>Retorna <see cref="BadRequestObjectResult"/> (400) se o estado do modelo for inválido ou se houver um erro ao criar o usuário.</description></item>
+        /// <item><description>Retorna <see cref="CreatedResult"/> (201) com os detalhes do usuário criado se a operação for bem-sucedida.</description></item>
+        /// </list>
+        /// </returns>
+        /// <remarks>
+        /// Certifique-se de que o <paramref name="model"/> contém dados válidos antes de chamar este método.
+        /// A resposta pode incluir lógica adicional para restringir certos detalhes com base na função do usuário (por exemplo, administrador).
+        /// </remarks>
+        [AllowAnonymous]
         [HttpPost("createUser")]
         public async Task<IActionResult> CreateUser([FromBody] UserDTO model)
         {
+            // Verifica se o modelo recebido (ex.: DTO com dados enviados pelo cliente) atende às regras de validação definidas
+            // (ex.: [Required], [StringLength], [EmailAddress] em propriedades do DTO).
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); // Retorna 400 com detalhes da validação
+                return BadRequest(ModelState);
             }
 
             var result = await _userService.AddUserAsync(model);
-            
+
             if (result == null)
             {
                 return BadRequest($"Erro ao criar usuário.{model.FirstName} {model.LastName}");
@@ -57,21 +78,45 @@ namespace APIBackend.API.Controllers
 
             return Ok(user);
         }
+        /*
+                // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
+                [Authorize(Roles = "admin")]
+                [HttpGet("getAllUsers")]
+                public async Task<IActionResult> GetAllUsers()
+                {
+                    var users = await _userService.GetUsersAsync();
 
-        // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
+                    if (users == null || users.Count == 0)
+                    {
+                        return NoContent(); // Retorna 204 se não houver usuários
+                    }
+
+                    return Ok(users);
+                }
+        */
+        [Authorize (Roles = "Admin")]
         [HttpGet("getAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
+            /*
+            // DEBUG: visualizar claims do usuário
+            var userRoles = User.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .ToList();
+
+            Console.WriteLine("Roles do usuário: " + string.Join(", ", userRoles));
+            */
+
             var users = await _userService.GetUsersAsync();
 
             if (users == null || users.Count == 0)
             {
-                return NoContent(); // Retorna 204 se não houver usuários
+                return NoContent();
             }
 
             return Ok(users);
         }
-
         [HttpPut("UpdateUserDetails")]
         public async Task<IActionResult> UpdateUserDetails([FromBody] UserUpdateFromUserDTO model)
         {
@@ -94,7 +139,7 @@ namespace APIBackend.API.Controllers
             return Ok(result);
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateFromAdminDTO model)
         {
@@ -117,6 +162,7 @@ namespace APIBackend.API.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUser")]
         public async Task<IActionResult> DeleteUser([FromQuery] int id)
         {

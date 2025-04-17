@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using APIBackend.Application.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,6 +41,8 @@ builder.Services.AddIdentity<User, Role>(options =>
 // Adicionando a injeção de dependência
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepoService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
 
 // Adicionando loggs na injecao de dependencia
 builder.Services.AddLogging(logging =>
@@ -77,6 +82,26 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
+// Configuração do JWT
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"], // Ex.: "sua-api"
+        ValidAudience = builder.Configuration["Jwt:Audience"], // Ex.: "sua-api-cliente"
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])) // Chave secreta
+    };
+});
+
 var app = builder.Build();
 
 // Configure o pipeline
@@ -87,8 +112,9 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
-app.UseAuthorization(); // Opcional, só se for usar autenticação/autorização
-
-app.MapControllers(); // Mapeia os endpoints dos controllers
+app.UseHttpsRedirection();
+app.UseAuthentication(); // Adiciona autenticação
+app.UseAuthorization(); // Adiciona autorização
+app.MapControllers();
 
 app.Run();
