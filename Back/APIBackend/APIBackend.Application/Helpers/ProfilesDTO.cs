@@ -18,6 +18,8 @@ namespace APIBackend.Application.Helpers
             CreateMap<UserUpdateFromUserDTO, User>().ReverseMap();
             CreateMap<UserUpdateFromAdminDTO, User>().ReverseMap();
             CreateMap<LoginDTO, User>().ReverseMap();
+            CreateMap<RefreshTokenDTO, RefreshToken>().ReverseMap();
+
         }
 
         /// <summary>

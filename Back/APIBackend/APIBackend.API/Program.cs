@@ -42,7 +42,7 @@ builder.Services.AddIdentity<User, Role>(options =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepositoryService>();
+builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
 
 // Adicionando loggs na injecao de dependencia
 builder.Services.AddLogging(logging =>

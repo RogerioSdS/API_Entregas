@@ -1,4 +1,4 @@
-using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -23,14 +23,9 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
     private readonly UserManager<User> _userManager = userManager;
     public readonly IMapper _mapper = mapper;
 
-/// 
+    /// 
     public async Task<UserDTO> AuthenticateUserAsync(string email, string password)
-    {        
-        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
-        {
-            return null;
-        }
-
+    {
         var user = await _apiDbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
         {
@@ -39,10 +34,14 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
 
         if (!await _userManager.CheckPasswordAsync(user, password))
         {
-            return null; 
+            return null;
         }
 
-        return _mapper.Map<UserDTO>(user);
+        var userDto = _mapper.Map<UserDTO>(user);
+        var roles = await _userManager.GetRolesAsync(user);
+        userDto.Role = roles.FirstOrDefault();
+
+        return userDto;
     }
 
     public async Task<string> GenerateJwtTokenAsync(UserDTO user)
@@ -51,7 +50,7 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         {
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role ?? "user")
+            new Claim(ClaimTypes.Role, user.Role )
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
@@ -73,19 +72,38 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         throw new NotImplementedException();
     }
 
-    public async Task CreateOrSaveRefreshTokenAsync(int userId, string refreshToken)
+    public async Task SaveRefreshTokenAsync(int userId)
     {
-        await _authRepo.SaveAsync(userId, refreshToken, DateTime.UtcNow.AddDays(7));
+        var randomBytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
+        var refreshToken = Convert.ToBase64String(randomBytes);
+
+        await _authRepo.SaveTokenAsync(userId, refreshToken, DateTime.UtcNow.AddDays(7));
     }
 
-    public async Task<int?> ValidateRefreshTokenAsync(string refreshToken)
+    public async Task<RefreshTokenDTO> GetRefreshTokenByIdAsync(int userId)
     {
-        var token = await _authRepo.GetByTokenAsync(refreshToken);
-        if (token == null || token.ExpiresAt < DateTime.UtcNow)
+        var user = await _authRepo.GetTokenByIdAsync(userId);
+        if (user == null)
         {
             return null;
         }
-        return token.UserId;
+
+        var userRefreshTokenDTO = _mapper.Map<RefreshTokenDTO>(user);
+
+
+        return userRefreshTokenDTO;
+    }    
+
+    public async Task<RefreshTokenDTO?> ValidateRefreshTokenAsync(int userId)
+    {
+        var user = await _authRepo.GetTokenByIdAsync(userId);
+        if (user == null || user.ExpiresAt < DateTime.UtcNow || user.IsRevoked)
+        {
+            return null;
+        }
+
+        var userRefreshToken = _mapper.Map<RefreshTokenDTO>(user);
+
+        return userRefreshToken;
     }
-    
 }

@@ -55,10 +55,18 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
                 entity.Property(r => r.Description).HasMaxLength(200);
                 entity.Property(r => r.IsActive).HasDefaultValue(true);
             });
-        
-        modelBuilder.Entity<RefreshToken>()
-                .HasOne(rt => rt.User)
-                .WithMany()
-                .HasForeignKey(rt => rt.UserId);
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(rt => rt.UserId);
+                entity.HasOne(rt => rt.User)
+                    .WithMany() //não tem propriedade de navegação em User -- public ICollection<RefreshToken> RefreshTokens { get; set; }
+
+                    .HasForeignKey(rt => rt.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                    
+                entity.Property(rt => rt.CreatedAt)
+                    .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')"); 
+            });
     }
 }

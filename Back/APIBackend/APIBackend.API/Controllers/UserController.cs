@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using APIBackend.Application.DTOs;
 using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace APIBackend.API.Controllers
 {
-    [Authorize] //Com o uso ASP.NET Identity com JWT (gerado no AuthService), o middleware de autenticação JWT (configurado em Program.cs) valida o token automaticamente.
+    //[Authorize] //Com o uso ASP.NET Identity com JWT (gerado no AuthService), o middleware de autenticação JWT (configurado em Program.cs) valida o token automaticamente.
     [ApiController]
     [Route("api/user")]
     public class UsersController : ControllerBase
@@ -77,22 +78,45 @@ namespace APIBackend.API.Controllers
 
             return Ok(user);
         }
+        /*
+                // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
+                [Authorize(Roles = "admin")]
+                [HttpGet("getAllUsers")]
+                public async Task<IActionResult> GetAllUsers()
+                {
+                    var users = await _userService.GetUsersAsync();
 
-        // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
-        [Authorize(Roles = "admin")]
+                    if (users == null || users.Count == 0)
+                    {
+                        return NoContent(); // Retorna 204 se não houver usuários
+                    }
+
+                    return Ok(users);
+                }
+        */
+        [Authorize (Roles = "Admin")]
         [HttpGet("getAllUsers")]
         public async Task<IActionResult> GetAllUsers()
         {
+            /*
+            // DEBUG: visualizar claims do usuário
+            var userRoles = User.Claims
+                .Where(c => c.Type == ClaimTypes.Role)
+                .Select(c => c.Value)
+                .ToList();
+
+            Console.WriteLine("Roles do usuário: " + string.Join(", ", userRoles));
+            */
+
             var users = await _userService.GetUsersAsync();
 
             if (users == null || users.Count == 0)
             {
-                return NoContent(); // Retorna 204 se não houver usuários
+                return NoContent();
             }
 
             return Ok(users);
         }
-
         [HttpPut("UpdateUserDetails")]
         public async Task<IActionResult> UpdateUserDetails([FromBody] UserUpdateFromUserDTO model)
         {
@@ -115,7 +139,7 @@ namespace APIBackend.API.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateFromAdminDTO model)
         {
@@ -138,7 +162,7 @@ namespace APIBackend.API.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "admin")]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("DeleteUser")]
         public async Task<IActionResult> DeleteUser([FromQuery] int id)
         {
