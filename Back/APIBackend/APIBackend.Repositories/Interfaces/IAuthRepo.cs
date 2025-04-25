@@ -5,8 +5,11 @@ namespace APIBackend.Repositories.Interfaces;
 
 public interface IAuthRepo
 {
-    Task<RefreshToken> SaveTokenAsync(int userId, string token, DateTime expiresAt);
-    Task<RefreshToken> GetTokenByIdAsync(int id);
-    Task RevokeAsync(int id);
-
+    public Task SaveTokenAsync(RefreshToken token);
+    public Task<RefreshToken?> GetTokenByIdAsync(int id);
+    public Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken);
+    public Task<List<RefreshToken>?> GetAllTokenByIdAsync(int id);
+    public Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
+    public Task RevokeTokenAsync(int id);
+    public Task UpdateTokenAsync(List<RefreshToken> tokens);
 }

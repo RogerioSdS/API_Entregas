@@ -15,33 +15,51 @@ public class AuthRepoService : IAuthRepo
         _context = context;
     }
 
-    public async Task<RefreshToken> SaveTokenAsync(int userId, string token, DateTime expiresAt)
-    {
-        await RevokeOldTokensAsync(userId);
-
-        var refreshToken = new RefreshToken
-        {
-            UserId = userId,
-            Token = token,
-            CreatedAt = DateTime.UtcNow,
-            ExpiresAt = expiresAt,
-            IsRevoked = false
-        };
-
-        _context.RefreshTokens.Add(refreshToken);
+    public async Task SaveTokenAsync(RefreshToken token)
+    {        
+        _context.RefreshTokens.Add(token);
         await _context.SaveChangesAsync();
-        
-        return refreshToken;
     }
 
-    public async Task<RefreshToken> GetTokenByIdAsync(int id)
+    public async Task<RefreshToken?> GetTokenByIdAsync(int id)
     {
         return await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.User.Id == id && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow);
     }
 
-    public async Task RevokeAsync(int id)
+    public async Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken)
     {
-        // Revoke a specific token by Id (e.g., for logout)
+        return await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow); 
+    }
+
+    /// <summary>
+    /// Retorna uma lista de todos os tokens de refresh associados ao usuário de id especificado.
+    /// </summary>
+    /// <param name="id">O id do usuário para o qual os tokens de refresh serão retornados.</param>
+    /// <returns>Retorna uma lista de Refresh Tokens <see cref="RefreshToken"/> ou null se n o houver tokens de refresh associados ao usu rio.</returns> 
+    public async Task<List<RefreshToken>?> GetAllTokenByIdAsync(int id)
+    {
+        return await _context.RefreshTokens
+            .Where(u => u.UserId == id).ToListAsync();            
+    }
+
+    public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
+    {
+        return await _context.Users
+            .FirstOrDefaultAsync(u => u.RefreshToken == refreshToken) ?? null;
+    }
+
+    public async Task UpdateTokenAsync(List<RefreshToken> tokens)
+    {
+            foreach(var token in tokens)
+            {
+                _context.RefreshTokens.Update(token);
+            }
+
+            await _context.SaveChangesAsync();
+    }
+
+    public async Task RevokeTokenAsync(int id)
+    {
         var refreshToken = await GetTokenByIdAsync(id);
         if (refreshToken == null)
         {
@@ -50,24 +68,5 @@ public class AuthRepoService : IAuthRepo
 
         refreshToken.IsRevoked = true;
         await _context.SaveChangesAsync();
-    }
-
-    private async Task RevokeOldTokensAsync(int userId)
-    {
-        //Buscando todos os users com tokens vencidos
-        var oldTokens = await _context.RefreshTokens
-            .Where(rt => rt.UserId == userId && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow)
-            .ToListAsync();
-
-        //Marcando todos com a flag regovada como true
-        foreach (var token in oldTokens)
-        {
-            token.IsRevoked = true;
-        }
-
-        if (oldTokens.Any())
-        {
-            await _context.SaveChangesAsync();
-        }
     }
 }

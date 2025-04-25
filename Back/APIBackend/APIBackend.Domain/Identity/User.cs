@@ -12,6 +12,7 @@ public class User : IdentityUser<int>
     [NotMapped]// Ignora no banco de dados
     [DataType(DataType.Password)]
     public required string Password { get; set; }
+    public string? RefreshToken { get; set; }
     public required string FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Address { get; set; }
