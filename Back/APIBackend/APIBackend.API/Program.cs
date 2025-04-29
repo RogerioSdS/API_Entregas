@@ -13,6 +13,8 @@ using APIBackend.Application.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using NLog.Extensions.Logging;
+using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,16 +46,10 @@ builder.Services.AddScoped<IUserRepo, UserRepoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
 
-// Adicionando loggs na injecao de dependencia
-builder.Services.AddLogging(logging =>
-{
-    logging.ClearProviders();
-    logging.AddConsole();
-    logging.AddDebug();
-    logging.AddFilter("APIBackend", LogLevel.Information); // Garante que logs do namespace sejam exibidos a partir de Information
-    logging.AddFilter("Microsoft", LogLevel.Warning); // Logs do Microsoft só a partir de Warning
-    logging.AddFilter("System", LogLevel.Warning); // Logs do System só a partir de Warning
-});
+// Configurar o NLog como provedor de logging
+builder.Logging.ClearProviders(); // Remover provedores padrão (ex.: Console)
+builder.Logging.SetMinimumLevel(LogLevel.Information); // Definir o nível mínimo de log
+builder.Host.UseNLog(); // Usa NLog no lugar dos logs padrões
 
 // Adicione serviços para Swagger
 builder.Services.AddSwaggerGen(options =>

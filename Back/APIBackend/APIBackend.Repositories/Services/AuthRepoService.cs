@@ -15,59 +15,116 @@ public class AuthRepoService : IAuthRepo
         _context = context;
     }
 
-    public async Task<RefreshToken> SaveTokenAsync(int userId, string token, DateTime expiresAt)
+    public async Task SaveTokenAsync(RefreshToken token)
     {
-        await RevokeOldTokensAsync(userId);
+        await using var transaction = await _context.Database.BeginTransactionAsync();
 
-        var refreshToken = new RefreshToken
+        try
         {
-            UserId = userId,
-            Token = token,
-            CreatedAt = DateTime.UtcNow,
-            ExpiresAt = expiresAt,
-            IsRevoked = false
-        };
+            // Agora informa explicitamente que o novo token é 'Added'
+            _context.Entry(token).State = EntityState.Added;
 
-        _context.RefreshTokens.Add(refreshToken);
-        await _context.SaveChangesAsync();
-        
-        return refreshToken;
+            // Salva
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
-    public async Task<RefreshToken> GetTokenByIdAsync(int id)
+    public async Task DeleteTokenAsync(RefreshToken token)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            // Deleta o token anterior diretamente no banco
+            await _context.RefreshTokens
+                .Where(t => t.Id == token.Id)
+                .ExecuteDeleteAsync();
+            // Salva
+            await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+
+    public async Task<RefreshToken?> GetTokenByIdAsync(int id)
     {
         return await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.User.Id == id && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow);
     }
 
-    public async Task RevokeAsync(int id)
+    public async Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken)
     {
-        // Revoke a specific token by Id (e.g., for logout)
+        return await _context.RefreshTokens.FirstOrDefaultAsync(rt => rt.Token == refreshToken && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow);
+    }
+
+    /// <summary>
+    /// Retorna uma lista de todos os tokens de refresh associados ao usuário de id especificado.
+    /// </summary>
+    /// <param name="id">O id do usuário para o qual os tokens de refresh serão retornados.</param>
+    /// <returns>Retorna uma lista de Refresh Tokens <see cref="RefreshToken"/> ou null se n o houver tokens de refresh associados ao usu rio.</returns> 
+    public async Task<List<RefreshToken>?> GetAllTokenByIdAsync(int id)
+    {
+        return await _context.RefreshTokens
+            .Where(u => u.Id == id).ToListAsync();
+    }
+
+    public async Task<User?> GetUserByRefreshTokenAsync(string refreshToken)
+    {
+        return await _context.Users
+            .Where(u => u.RefreshToken.Any(rt => rt.Token == refreshToken))
+            .FirstOrDefaultAsync();
+    }
+
+    public async Task UpdateTokenAsync(List<RefreshToken> tokens)
+    {
+        foreach (var token in tokens)
+        {
+            _context.RefreshTokens.Update(token);
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RevokeTokenAsync(int id)
+    {
         var refreshToken = await GetTokenByIdAsync(id);
         if (refreshToken == null)
         {
-            throw new Exception("Refresh token not found or already invalid.");
+            return;
         }
 
         refreshToken.IsRevoked = true;
         await _context.SaveChangesAsync();
+
+        // Solução: detach cada objeto deletado
+        foreach (var entry in _context.ChangeTracker.Entries<RefreshToken>())
+        {
+            entry.State = EntityState.Detached;
+        }
     }
 
-    private async Task RevokeOldTokensAsync(int userId)
+    public async Task RemoveOldTokensAsync(List<RefreshToken> listTokens)
     {
-        //Buscando todos os users com tokens vencidos
-        var oldTokens = await _context.RefreshTokens
-            .Where(rt => rt.UserId == userId && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow)
-            .ToListAsync();
+        _context.RefreshTokens.RemoveRange(listTokens);
+        await _context.SaveChangesAsync();
 
-        //Marcando todos com a flag regovada como true
-        foreach (var token in oldTokens)
+        // Solução: detach cada objeto deletado
+        foreach (var token in listTokens)
         {
-            token.IsRevoked = true;
-        }
-
-        if (oldTokens.Any())
-        {
-            await _context.SaveChangesAsync();
+            var entry = _context.Entry(token);
+            if (entry != null)
+                entry.State = EntityState.Detached;
         }
     }
 }

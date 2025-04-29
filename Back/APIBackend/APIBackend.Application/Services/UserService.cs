@@ -36,8 +36,8 @@ public class UserService : IUserService
         {
             var createdUser = await _userRepository.AddUserAsync(user);
             if (user.SignInAfterCreation)
-                await AuthAsync(createdUser);
-            //preciso criar um retorna diferente para quem for admin e quando for user
+                await AuthAsync(createdUser);//preciso criar um retorna diferente para quem for admin e quando for user
+                
             return _mapper.Map<UserDTO>(createdUser);
         }
         catch (Exception ex)

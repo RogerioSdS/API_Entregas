@@ -28,4 +28,5 @@ public class User : IdentityUser<int>
     public string? CreditCardNumber { get; set; }
     public int FatureDay { get; set; } = 5;
     public IEnumerable<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public IEnumerable<RefreshToken> RefreshToken { get; set; } = new List<RefreshToken>();
 }

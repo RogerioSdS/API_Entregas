@@ -19,16 +19,23 @@
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.4" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.4">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="NLog" Version="5.4.0" />
+		<PackageReference Include="NLog.Web.AspNetCore" Version="5.4.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\APIBackend.Application\APIBackend.Application.csproj" />
-	  <ProjectReference Include="..\APIBackend.Domain\APIBackend.Domain.csproj" />
-	  <ProjectReference Include="..\APIBackend.Repositories\APIBackend.Repositories.csproj" />
+		<ProjectReference Include="..\APIBackend.Application\APIBackend.Application.csproj" />
+		<ProjectReference Include="..\APIBackend.Domain\APIBackend.Domain.csproj" />
+		<ProjectReference Include="..\APIBackend.Repositories\APIBackend.Repositories.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="nlog.config" CopyToOutputDirectory="Always" />
+	</ItemGroup>
+
 
 </Project>

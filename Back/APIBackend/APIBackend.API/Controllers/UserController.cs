@@ -4,6 +4,7 @@ using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using NLog;
 
 namespace APIBackend.API.Controllers
 {
@@ -13,6 +14,7 @@ namespace APIBackend.API.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
+        protected Logger _loggerNLog = LogManager.GetCurrentClassLogger();
 
         public UsersController(IUserService userService)
         {
@@ -36,6 +38,7 @@ namespace APIBackend.API.Controllers
         /// </remarks>
         [AllowAnonymous]
         [HttpPost("createUser")]
+        /*Antes de permitir utilizar o método precisa estabelecer o tipo de meio de criação, por exemplo será pelo APP, pela pagina web ou pelo admin, tipo se for o proprio user ou admin, para gerir a resposta*/
         public async Task<IActionResult> CreateUser([FromBody] UserDTO model)
         {
             // Verifica se o modelo recebido (ex.: DTO com dados enviados pelo cliente) atende às regras de validação definidas
@@ -51,8 +54,17 @@ namespace APIBackend.API.Controllers
             {
                 return BadRequest($"Erro ao criar usuário.{model.FirstName} {model.LastName}");
             }
-            // analisar se é necessário retornar o usuário.id somente quando for o admin que estiver criando o usuário
-            return Created("", result);
+
+            _loggerNLog.Info($"Usuario criado com sucesso: {result.FirstName + " " + result.LastName} - {result.Email}");
+
+            if(result.Role.Contains("Admin"))
+            {
+                return Created("", result);
+            }
+            else
+            {
+                return Created("", new { result.FirstName, result.LastName, result.Email });
+            }
         }
 
         [HttpGet("getUserById")]
@@ -78,22 +90,7 @@ namespace APIBackend.API.Controllers
 
             return Ok(user);
         }
-        /*
-                // Preciso realizar a validação que somente admin pode fazer essa consulta, utilizando o JWT
-                [Authorize(Roles = "admin")]
-                [HttpGet("getAllUsers")]
-                public async Task<IActionResult> GetAllUsers()
-                {
-                    var users = await _userService.GetUsersAsync();
 
-                    if (users == null || users.Count == 0)
-                    {
-                        return NoContent(); // Retorna 204 se não houver usuários
-                    }
-
-                    return Ok(users);
-                }
-        */
         [Authorize (Roles = "Admin")]
         [HttpGet("getAllUsers")]
         public async Task<IActionResult> GetAllUsers()
