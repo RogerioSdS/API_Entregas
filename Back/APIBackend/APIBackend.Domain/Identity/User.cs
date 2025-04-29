@@ -12,7 +12,6 @@ public class User : IdentityUser<int>
     [NotMapped]// Ignora no banco de dados
     [DataType(DataType.Password)]
     public required string Password { get; set; }
-    public string? RefreshToken { get; set; }
     public required string FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Address { get; set; }
@@ -29,4 +28,5 @@ public class User : IdentityUser<int>
     public string? CreditCardNumber { get; set; }
     public int FatureDay { get; set; } = 5;
     public IEnumerable<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public IEnumerable<RefreshToken> RefreshToken { get; set; } = new List<RefreshToken>();
 }

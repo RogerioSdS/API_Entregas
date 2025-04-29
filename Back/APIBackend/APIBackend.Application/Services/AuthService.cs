@@ -38,31 +38,41 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         }
 
         var userDto = _mapper.Map<UserDTO>(user);
+
+        var userDtoWithRoles = await GetUserRolesAsync(userDto);        
+
+        return userDtoWithRoles;
+    }
+
+    public async Task<UserDTO> GetUserRolesAsync( UserDTO userDto)
+    {
+        var user = _mapper.Map<User>(userDto);
+
         var roles = await _userManager.GetRolesAsync(user);
         userDto.Role = roles.FirstOrDefault() ?? string.Empty;
 
         return userDto;
     }
 
-/* Arrumar os metodos comentados
-  
+    /* Arrumar os metodos comentados
 
-    public async Task<bool> ValidateRefreshTokenByToken(string refreshToken)
-    {
-        var isValidRefreshToken =  await _context.RefreshTokens
-        .Where(rt => rt.Token == refreshToken && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow)
-        .ToListAsync();
 
-        if(isValidRefreshToken == null || isValidRefreshToken.Count > 0)
+        public async Task<bool> ValidateRefreshTokenByToken(string refreshToken)
         {
-            return false;
+            var isValidRefreshToken =  await _context.RefreshTokens
+            .Where(rt => rt.Token == refreshToken && !rt.IsRevoked && rt.ExpiresAt > DateTime.UtcNow)
+            .ToListAsync();
+
+            if(isValidRefreshToken == null || isValidRefreshToken.Count > 0)
+            {
+                return false;
+            }
+
+            return true;
         }
-
-        return true;
     }
-}
 
-*/
+    */
 
     public async Task<string> GenerateJwtTokenAsync(UserDTO user)
     {
@@ -115,19 +125,20 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         await _authRepo.UpdateTokenAsync(tokenReturn);
     }
 
-    public async Task<RefreshTokenDTO> SaveRefreshTokenAsync(int userId)
+    public async Task<RefreshTokenDTO> SaveRefreshTokenAsync(UserDTO user)
     {
         var randomBytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(32);
         var codHashToken = Convert.ToBase64String(randomBytes);
         var refreshToken = new RefreshToken
         {
-            UserId = userId,
+            UserId = user.Id,
             Token = codHashToken,
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = DateTime.UtcNow.AddDays(7),
             IsRevoked = false
         };
 
+        //await _authRepo.DeleteTokenAsync(refreshToken);
         await _authRepo.SaveTokenAsync(refreshToken);
         var refreshTokenDto = _mapper.Map<RefreshTokenDTO>(refreshToken);
 
@@ -171,8 +182,36 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         return userDto;
     }
 
+    public async Task RemoveOldTokensAsync(int userId)
+    {
+        var allTokens = await _authRepo.GetAllTokenByIdAsync(userId);
+
+        if (allTokens == null || allTokens.Count == 0)
+        {
+            return;
+        }
+
+        var tokenToRemove = new List<RefreshToken>(); 
+
+        foreach (var token in allTokens)
+        {
+            if (token.ExpiresAt > DateTime.UtcNow + TimeSpan.FromDays(60))
+            {
+                tokenToRemove.Add(token);
+            }
+        }
+
+        if (tokenToRemove.Count == 0)
+        {
+            return;
+        }
+
+        await _authRepo.RemoveOldTokensAsync(tokenToRemove);
+    }
+
     public async Task RevokeTokensAsync(int id)
     {
+        await RemoveOldTokensAsync(id);
         await RevokeOldTokensAsync(id);
         await RevokeRefreshTokenAsync(id);
     }

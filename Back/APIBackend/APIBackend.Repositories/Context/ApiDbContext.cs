@@ -56,17 +56,22 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
                 entity.Property(r => r.IsActive).HasDefaultValue(true);
             });
 
-        modelBuilder.Entity<RefreshToken>(entity =>
+        modelBuilder.Entity<RefreshToken>(
+            entity =>
             {
-                entity.HasKey(rt => rt.UserId);
-                entity.HasOne(rt => rt.User)
-                    .WithMany() //não tem propriedade de navegação em User -- public ICollection<RefreshToken> RefreshTokens { get; set; }
+                entity.Property(rt => rt.Id).ValueGeneratedOnAdd();  // Gerar o Id do token automaticamente
+                entity.HasKey(rt => rt.Id);  // Chave primária do token é o Id
 
-                    .HasForeignKey(rt => rt.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
-                    
+                // Relacionamento entre RefreshToken e User
+                entity.HasOne(rt => rt.User)
+                    .WithMany(u => u.RefreshToken)  // User pode ter vários RefreshTokens
+                    .HasForeignKey(rt => rt.UserId)  // Use UserId como chave estrangeira
+                    .OnDelete(DeleteBehavior.Cascade);  // Ao excluir um usuário, exclua seus tokens de atualização
+
                 entity.Property(rt => rt.CreatedAt)
-                    .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')"); 
+                    .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')");
             });
+
+
     }
 }

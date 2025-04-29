@@ -12,4 +12,6 @@ public interface IAuthRepo
     public Task<User?> GetUserByRefreshTokenAsync(string refreshToken);
     public Task RevokeTokenAsync(int id);
     public Task UpdateTokenAsync(List<RefreshToken> tokens);
+    public Task RemoveOldTokensAsync(List<RefreshToken> listTokens);
+    public  Task DeleteTokenAsync(RefreshToken token);
 }
