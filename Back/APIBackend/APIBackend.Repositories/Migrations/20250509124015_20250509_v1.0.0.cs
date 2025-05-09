@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace APIBackend.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class Migration20250429_v100 : Migration
+    public partial class _20250509_v100 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

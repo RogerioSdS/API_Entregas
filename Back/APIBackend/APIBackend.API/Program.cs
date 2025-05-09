@@ -101,7 +101,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("OnlyAdmin", policy =>
-        policy.RequireClaim("Department", "SystemAdmin")); //Preciso inserir essa claim no token para o usuário que for admin
+        policy.RequireClaim("Department", "SystemAdmin")); //Preciso inserir essa claim no token para o usuário que for admin, ainda não apliquei essa politica
 });
 
 var app = builder.Build();

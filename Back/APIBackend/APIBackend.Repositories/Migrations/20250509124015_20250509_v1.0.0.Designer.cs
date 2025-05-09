@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIBackend.Repositories.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20250430130748_Migration20250429_v1.0.0")]
-    partial class Migration20250429_v100
+    [Migration("20250509124015_20250509_v1.0.0")]
+    partial class _20250509_v100
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
