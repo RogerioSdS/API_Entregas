@@ -11,14 +11,45 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIBackend.Repositories.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    [Migration("20250327111942_Migration20250327_v1.0.1")]
-    partial class Migration20250327_v101
+    [Migration("20250430130748_Migration20250429_v1.0.0")]
+    partial class Migration20250429_v100
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
+
+            modelBuilder.Entity("APIBackend.Domain.Identity.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsRevoked")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens");
+                });
 
             modelBuilder.Entity("APIBackend.Domain.Identity.Role", b =>
                 {
@@ -35,7 +66,9 @@ namespace APIBackend.Repositories.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
@@ -67,7 +100,6 @@ namespace APIBackend.Repositories.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("City")
@@ -126,10 +158,6 @@ namespace APIBackend.Repositories.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("PasswordHash")
                         .HasColumnType("TEXT");
 
@@ -138,10 +166,6 @@ namespace APIBackend.Repositories.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
@@ -156,8 +180,9 @@ namespace APIBackend.Repositories.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("ZipCode")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -182,10 +207,10 @@ namespace APIBackend.Repositories.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("AssignmentDate")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                    b.Property<DateTime?>("AssignmentDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -278,23 +303,30 @@ namespace APIBackend.Repositories.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("APIBackend.Domain.Identity.RefreshToken", b =>
+                {
+                    b.HasOne("APIBackend.Domain.Identity.User", "User")
+                        .WithMany("RefreshToken")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("APIBackend.Domain.Identity.UserRole", b =>
                 {
-                    b.HasOne("APIBackend.Domain.Identity.Role", "Role")
+                    b.HasOne("APIBackend.Domain.Identity.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("APIBackend.Domain.Identity.User", "User")
+                    b.HasOne("APIBackend.Domain.Identity.User", null)
                         .WithMany("UserRoles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -335,6 +367,8 @@ namespace APIBackend.Repositories.Migrations
 
             modelBuilder.Entity("APIBackend.Domain.Identity.User", b =>
                 {
+                    b.Navigation("RefreshToken");
+
                     b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618

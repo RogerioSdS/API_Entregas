@@ -5,7 +5,7 @@ using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
 using APIBackend.Repositories.Services;
-using AutoMapper; // Importante para o AutoMapper
+using APIBackend.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -13,7 +13,6 @@ using APIBackend.Application.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using NLog.Extensions.Logging;
 using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -98,6 +97,13 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+//Criando a política de autorização
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("OnlyAdmin", policy =>
+        policy.RequireClaim("Department", "SystemAdmin")); //Preciso inserir essa claim no token para o usuário que for admin
+});
+
 var app = builder.Build();
 
 // Configure o pipeline
@@ -105,7 +111,18 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minha API v1"));
-    app.UseDeveloperExceptionPage();
+    app.UseDeveloperExceptionPage();        
+}
+
+// Insere o seeders com os dados se a flag --seed for passada --dotnet run --seed
+if(args.Contains("--seed"))
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApiDbContext>();
+    await context.InitializeDatabaseAsync(); // Inicializar o banco de dados com scripts SQL    
+
+    return; // Para evitar que o restante do pipeline seja executado    
 }
 
 app.UseHttpsRedirection();

@@ -12,14 +12,13 @@ public class UserRepoService : IUserRepo
     private readonly UserManager<User> _userManager;
     private readonly RoleManager<Role> _roleManager;
     private readonly ApiDbContext _userContext;
-    private readonly List<string> _validRoles;
 
-    public UserRepoService(ApiDbContext context, RoleManager<Role> roleManager, UserManager<User> userManager, IConfiguration configuration)
+    public UserRepoService(ApiDbContext context, RoleManager<Role> roleManager, UserManager<User> userManager)
     {
         _userContext = context;
         _roleManager = roleManager;
         _userManager = userManager;
-        _validRoles = configuration.GetSection("UserRoles:ValidRoles").Get<List<string>>() ?? new List<string>();
+        
     }
 
     /// <summary>
@@ -38,30 +37,19 @@ public class UserRepoService : IUserRepo
         if (user == null)
             throw new ArgumentNullException(nameof(user), "Usuário não pode ser nulo.");
 
-        if (!_validRoles.Contains(user.Role))
-            throw new ArgumentException($"O papel '{user.Role}' é inválido.", nameof(user.Role));
-
         using (var transaction = await _userContext.Database.BeginTransactionAsync())
         {
+            await InsertRoleToUserAsync(user.Role);
+
             try
             {
-                // Gerar username único
-                user.UserName = user.FirstName + user.LastName + DateTime.Now.Millisecond;
-
                 // Criar o usuário
                 var identityResult = await _userManager.CreateAsync(user, user.Password);
                 if (!identityResult.Succeeded)
                     throw new Exception($"Erro ao criar usuário: {string.Join(", ", identityResult.Errors.Select(e => e.Description))}");
+                
 
-                // Verificar se a role existe, criar se necessário
-                if (!await _roleManager.RoleExistsAsync(user.Role))
-                {
-                    var roleResult = await _roleManager.CreateAsync(new Role(user.Role));
-                    if (!roleResult.Succeeded)
-                        throw new Exception($"Erro ao criar role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
-                }
-
-                // Associar o usuário à role
+                // Associar o usuário à role 
                 var roleAddResult = await _userManager.AddToRoleAsync(user, user.Role);
                 if (!roleAddResult.Succeeded)
                     throw new Exception($"Erro ao atribuir role: {string.Join(", ", roleAddResult.Errors.Select(e => e.Description))}");
@@ -81,6 +69,16 @@ public class UserRepoService : IUserRepo
                 throw new Exception($"Erro ao adicionar usuário: {ex.Message}");
             }
         }
+    }
+
+    public async Task InsertRoleToUserAsync(string role)
+    {
+        if (!await _roleManager.RoleExistsAsync(role))
+        {
+            var roleResult = await _roleManager.CreateAsync(new Role(role));
+            if (!roleResult.Succeeded)
+                throw new Exception($"Erro ao criar role: {string.Join(", ", roleResult.Errors.Select(e => e.Description))}");
+        }        
     }
 
     /// <summary>
@@ -121,7 +119,7 @@ public class UserRepoService : IUserRepo
     /// <param name="name">Nome do usuário.</param>
     /// <returns>O usuário encontrado.</returns>
     /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
-    public async Task<User> GetUserByNameAsync(string name)
+    public async Task<User?> GetUserByNameAsync(string name)
     {
         return await _userManager.Users.FirstOrDefaultAsync(u => u.FirstName == name) ?? null;
     }

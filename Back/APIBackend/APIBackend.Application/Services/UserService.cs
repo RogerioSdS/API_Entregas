@@ -4,6 +4,7 @@ using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace APIBackend.Application.Services;
 
@@ -12,12 +13,14 @@ public class UserService : IUserService
     private readonly SignInManager<User> _signInManager;
     private readonly IMapper _mapper;
     private readonly IUserRepo _userRepository;
+    private readonly List<string> _validRoles;
 
-    public UserService(SignInManager<User> signInManager, IMapper mapper, IUserRepo userPersist)
+    public UserService(SignInManager<User> signInManager, IMapper mapper, IUserRepo userPersist, IConfiguration configuration)
     {
         _userRepository = userPersist;
         _signInManager = signInManager;
         _mapper = mapper;
+        _validRoles = configuration.GetSection("UserRoles:ValidRoles").Get<List<string>>() ?? new List<string>();
     }
 
     /// <summary>
@@ -34,10 +37,13 @@ public class UserService : IUserService
         var user = _mapper.Map<User>(model);
         try
         {
+            await VerifyRoleIsPermitedAsync(user.Role);            
+            user.UserName = user.FirstName + user.LastName + DateTime.Now.Millisecond; // Gerar username único           
             var createdUser = await _userRepository.AddUserAsync(user);
-            if (user.SignInAfterCreation)
-                await AuthAsync(createdUser);//preciso criar um retorna diferente para quem for admin e quando for user
-                
+
+            if (user.SignInAfterCreation) //logar o cliente quando realizar o cadastro
+                await AuthAsync(createdUser);//preciso criar um retorna diferente para quem for admin e quando for user                
+
             return _mapper.Map<UserDTO>(createdUser);
         }
         catch (Exception ex)
@@ -202,4 +208,16 @@ public class UserService : IUserService
         var user = _mapper.Map<User>(userDTO);
         return await _userRepository.GetRolesAsync(user);
     }    
+
+     public async Task VerifyRoleIsPermitedAsync(string role)
+    {
+        await Task.Run(() =>
+        {
+            if (!_validRoles.Contains(role))
+            {
+                throw new ArgumentException(
+                    $"O papel '{role}' é inválido.", nameof(role));
+            }
+        });
+    }
 }

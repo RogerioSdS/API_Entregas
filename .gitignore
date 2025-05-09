@@ -57,3 +57,5 @@ Thumbs.db
 /Back/APIBackend/APIBackend.API/APIBackend.db
 *.db-shm
 *.db-wal
+*.txt
+*.sql

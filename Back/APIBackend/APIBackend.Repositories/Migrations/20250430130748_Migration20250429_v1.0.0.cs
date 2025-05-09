@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace APIBackend.Repositories.Migrations
 {
     /// <inheritdoc />
-    public partial class _20250319_v20 : Migration
+    public partial class Migration20250429_v100 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -18,7 +18,7 @@ namespace APIBackend.Repositories.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
-                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsActive = table.Column<bool>(type: "INTEGER", nullable: false, defaultValue: true),
                     Name = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "TEXT", nullable: true)
@@ -37,11 +37,12 @@ namespace APIBackend.Repositories.Migrations
                     Email = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
                     FirstName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false),
                     LastName = table.Column<string>(type: "TEXT", maxLength: 50, nullable: true),
-                    Address = table.Column<string>(type: "TEXT", nullable: false),
+                    Address = table.Column<string>(type: "TEXT", nullable: true),
                     Complement = table.Column<string>(type: "TEXT", nullable: true),
-                    ZipCode = table.Column<int>(type: "INTEGER", nullable: false),
+                    ZipCode = table.Column<string>(type: "TEXT", nullable: false),
                     City = table.Column<string>(type: "TEXT", nullable: true),
                     Description = table.Column<string>(type: "TEXT", nullable: true),
+                    SignInAfterCreation = table.Column<bool>(type: "INTEGER", nullable: false),
                     CreditLimit = table.Column<decimal>(type: "TEXT", nullable: true),
                     IsAdmin = table.Column<bool>(type: "INTEGER", nullable: false),
                     AccessAllowed = table.Column<bool>(type: "INTEGER", nullable: false),
@@ -134,7 +135,7 @@ namespace APIBackend.Repositories.Migrations
                 {
                     UserId = table.Column<int>(type: "INTEGER", nullable: false),
                     RoleId = table.Column<int>(type: "INTEGER", nullable: false),
-                    AssignmentDate = table.Column<string>(type: "TEXT", maxLength: 50, nullable: false)
+                    AssignmentDate = table.Column<DateTime>(type: "TEXT", nullable: true, defaultValueSql: "STRFTIME('%Y-%m-%d %H:%M:%S', 'now')")
                 },
                 constraints: table =>
                 {
@@ -167,6 +168,29 @@ namespace APIBackend.Repositories.Migrations
                     table.PrimaryKey("PK_AspNetUserTokens", x => new { x.UserId, x.LoginProvider, x.Name });
                     table.ForeignKey(
                         name: "FK_AspNetUserTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    Token = table.Column<string>(type: "TEXT", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "STRFTIME('%Y-%m-%d %H:%M:%S', 'now')"),
+                    ExpiresAt = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    IsRevoked = table.Column<bool>(type: "INTEGER", nullable: false),
+                    UserId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
@@ -215,6 +239,11 @@ namespace APIBackend.Repositories.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
         }
 
         /// <inheritdoc />
@@ -234,6 +263,9 @@ namespace APIBackend.Repositories.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

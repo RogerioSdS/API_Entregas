@@ -9,7 +9,6 @@ namespace APIBackend.Repositories.Services;
 public class AuthRepoService : IAuthRepo
 {
     private readonly ApiDbContext _context;
-
     public AuthRepoService(ApiDbContext context)
     {
         _context = context;
