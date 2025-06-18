@@ -13,5 +13,10 @@ public interface IAuthRepo
     public Task RevokeTokenAsync(int id);
     public Task UpdateTokenAsync(List<RefreshToken> tokens);
     public Task RemoveOldTokensAsync(List<RefreshToken> listTokens);
-    public  Task DeleteTokenAsync(RefreshToken token);
+    public Task DeleteTokenAsync(RefreshToken token);
+    public Task<string> CreateEmailConfirmationTokenAsync(string email);
+    public Task<bool> ConfirmEmailAsync(string email, string token);
+    public Task<string> CreateResetPasswordTokenAsync(string email);
+    public Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
+
 }

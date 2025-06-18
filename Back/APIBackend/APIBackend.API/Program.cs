@@ -27,6 +27,11 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(3); // Tokens válidos por 3 horas
+});
+
 builder.Services.AddIdentity<User, Role>(options =>
 {
     options.Password.RequireUppercase = true; // Pelo menos uma letra maiúscula

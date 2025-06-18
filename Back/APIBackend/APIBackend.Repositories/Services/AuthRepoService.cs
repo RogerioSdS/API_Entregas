@@ -3,14 +3,17 @@ using APIBackend.Domain.Enum;
 using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 namespace APIBackend.Repositories.Services;
 
 public class AuthRepoService : IAuthRepo
 {
     private readonly ApiDbContext _context;
-    public AuthRepoService(ApiDbContext context)
+    private readonly UserManager<User> _userManager;
+    public AuthRepoService(ApiDbContext context, UserManager<User> userManager)
     {
+        _userManager = userManager;
         _context = context;
     }
 
@@ -125,5 +128,48 @@ public class AuthRepoService : IAuthRepo
             if (entry != null)
                 entry.State = EntityState.Detached;
         }
+    }
+
+    public async Task<string> CreateEmailConfirmationTokenAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null) throw new Exception("Usuário não encontrado.");
+
+        if (user.EmailConfirmed) throw new Exception("E-mail ja confirmado.");
+
+        return await _userManager.GenerateEmailConfirmationTokenAsync(user) ?? throw new Exception("Erro ao gerar token de confirmação.");
+    }
+
+    public async Task<bool> ConfirmEmailAsync(string email, string token)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null) throw new Exception("Usuário não encontrado.");
+
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+
+        return result.Succeeded;
+    }
+
+    public async Task<string> CreateResetPasswordTokenAsync(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email) ?? throw new Exception("Usuário não encontrado.");
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        if (string.IsNullOrWhiteSpace(token))
+            throw new Exception("Erro ao gerar token de redefinição de senha.");
+
+        return token;
+    }
+
+    public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+    {
+        var user = await _userManager.FindByEmailAsync(email) ?? throw new Exception("Usuário não encontrado.");
+
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+        return result.Succeeded;
     }
 }

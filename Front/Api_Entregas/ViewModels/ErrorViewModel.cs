@@ -1,4 +1,4 @@
-namespace Api_Entregas.Models;
+namespace Api_Entregas.ViewModels;
 
 public class ErrorViewModel
 {
