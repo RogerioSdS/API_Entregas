@@ -25,14 +25,16 @@ namespace Api_Entregas.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string actionDemanded = "")
         {
-            _logger.LogInformation("Método Login (GET) chamado. Renderizando a view Login.cshtml.");
+            ViewBag.ActionDemanded = actionDemanded;  // Passar o valor para a View
+            _logger.LogInformation($"Método Login (GET) chamado. actionDemanded = {actionDemanded}");
             return View();
         }
 
+
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string actionDemanded = "")
         {
             if (ModelState.IsValid)
             {
@@ -52,10 +54,17 @@ namespace Api_Entregas.Controllers
                         var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
                         userData.Email = model.Email;
                         _logger.LogInformation($"Resposta da API: {responseContent}");
-                         // Armazenar como JSON na sessão
+                        // Armazenar como JSON na sessão
                         HttpContext.Session.SetString("UserData", JsonConvert.SerializeObject(userData));
                         _logger.LogInformation("Redirecionando para SignIn após login bem-sucedido.");
-                        return RedirectToAction("SignIn");
+
+                        if (string.IsNullOrEmpty(actionDemanded))
+                        {
+                            return View("Views/Home/Index.cshtml");
+                        }
+                        
+                        return View($"Views//{actionDemanded}/{actionDemanded}.cshtml", userData);
+
                     }
                     else
                     {
@@ -64,7 +73,7 @@ namespace Api_Entregas.Controllers
                         //CRIAR PAGINA PARA INFORMAR QUE HOUVE ERRO NO LOGIN
                         _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}, Resposta: {errorContent}");
                         ModelState.AddModelError("", "E-mail ou senha inválidos.");
-                        return View("Login", model);
+                        return View("Views/Login/Login.cshtml", model);
                     }
                 }
                 catch (Exception ex)
@@ -83,28 +92,8 @@ namespace Api_Entregas.Controllers
 
         [HttpGet("SignIn")]
         public IActionResult SignIn()
-        {
-            // _logger.LogInformation("Método SignIn chamado com sucesso.");
-            var userDataJson = HttpContext.Session.GetString("UserData");
-
-            if (string.IsNullOrEmpty(userDataJson))
-            {
-                _logger.LogWarning("Usuário não encontrado na sessão. Redirecionando para Login.");
-                return RedirectToAction("Login");
-            }
-
-            // _logger.LogInformation("Dados do Usuário na sessão: {} ", userDataJson);
-            var userData = JsonConvert.DeserializeObject<SignInViewModel>(userDataJson);
-            var model = new SignInViewModel
-            {
-                Email = userData.Email,
-                Token = $"JWT: {userData.Token}",
-                RefreshToken = $"RefreshToken: {userData.RefreshToken}",
-                StartSession = userData.StartSession          
-            };
-
-            _logger.LogInformation($"Renderizando a view SignIn.cshtml com o modelo: Email={model.Email}, Name=");
-            return View("SignIn", model);
+        {           
+            return View();
         }
 
         [HttpGet("Error")]
