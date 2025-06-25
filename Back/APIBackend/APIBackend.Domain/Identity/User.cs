@@ -19,6 +19,7 @@ public class User : IdentityUser<int>
     public string ZipCode { get; set; } = string.Empty;
     public string? City { get; set; }
     public string? Description { get; set; }
+    public ICollection<Student> Students { get; set; } = new List<Student>();
     [NotMapped]
     public required string Role { get; set; }
     public bool SignInAfterCreation { get; set; } = false;
