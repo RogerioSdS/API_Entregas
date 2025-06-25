@@ -1,3 +1,4 @@
+using APIBackend.Domain.Enum;
 using APIBackend.Domain.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -14,6 +15,8 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
 
     public DbSet<User> Users { get; set; } //não seria necessário utiliza-lo, pois o IdentityDbContext já possui um DbSet de User, e esta sendo passado como parametro para o IdentityDbContext
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<Student> Students { get; set; }
+    public DbSet<ClassDetails> ClassDetails { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -72,6 +75,30 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
                     .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')");
             });
 
+              modelBuilder.Entity<Student>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd(); // 👈 gera o Id automaticamente
 
+            entity.Property(e => e.FirstName).IsRequired();
+            entity.Property(e => e.LastName).IsRequired();
+            entity.Property(e => e.Email).IsRequired();
+            entity.Property(e => e.PhoneNumber).IsRequired();
+
+            entity.HasOne(e => e.Responsible)
+                  .WithMany(u => u.Students)
+                  .HasForeignKey(e => e.ResponsibleId)
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ClassDetails>(entity =>
+        {
+            entity.HasKey(e => e.Id); 
+
+            entity.HasOne(e => e.Student)
+                  .WithMany(s => s.Classes)
+                  .HasForeignKey(e => e.StudentId)
+                  .OnDelete(DeleteBehavior.Cascade); 
+        });
     }
 }

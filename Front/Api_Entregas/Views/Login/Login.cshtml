@@ -1,4 +1,4 @@
-﻿@using Api_Entregas.Models
+﻿@using Api_Entregas.ViewModels
 @model LoginViewModel
 
 @{
@@ -47,7 +47,12 @@
                                 <input type="password" class="form-control" id="password1" name="Password" placeholder="Your password..." required>
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
+
+                            <!-- Campo escondido para levar o actionDemanded para o POST -->
+                            <input type="hidden" name="actionDemanded" value="@ViewBag.ActionDemanded" />
+                            
                             <button type="submit" class="btn btn-info btn-block btn-round">Login</button>
+                            
                         </form>
                         
                         <div class="text-center text-muted delimiter">or use a social network</div>

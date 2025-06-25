@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using Api_Entregas.Models;
+using Api_Entregas.ViewModels;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace Api_Entregas.Controllers
 {
@@ -14,56 +15,64 @@ namespace Api_Entregas.Controllers
     {
         private readonly ILogger<LoginController> _logger;
         private readonly HttpClient _httpClient;
+        private readonly IConfiguration _configuration;
 
-        public LoginController(ILogger<LoginController> logger, IHttpClientFactory httpClientFactory)
+        public LoginController(ILogger<LoginController> logger, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _logger = logger;
             _httpClient = httpClientFactory.CreateClient();
+            _configuration = configuration;
         }
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string actionDemanded = "")
         {
-            _logger.LogInformation("Método Login (GET) chamado. Renderizando a view Login.cshtml.");
+            ViewBag.ActionDemanded = actionDemanded;  // Passar o valor para a View
+            _logger.LogInformation($"Método Login (GET) chamado. actionDemanded = {actionDemanded}");
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string actionDemanded = "")
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // Configurar a URL da API de usuários com parâmetros de consulta
-                    string apiUrl = "http://localhost:5088/api/user/getUser";
-                    string parameters = $"?Email={Uri.EscapeDataString(model.Email)}&Password={Uri.EscapeDataString(model.Password)}";
-                    var requestUri = $"{apiUrl}{parameters}";
+                    string apiUrl = _configuration["ApiBackendSettings:AuthUrl"] ?? string.Empty;
+                    string jsonBody = JsonConvert.SerializeObject(model); 
+                    var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+                    _logger.LogInformation($"Fazendo requisição para {apiUrl + jsonBody}");
 
-                    _logger.LogInformation($"Fazendo requisição para {requestUri}");
-
-                    // Fazer a requisição GET para a API de usuários
-                    var response = await _httpClient.GetAsync(requestUri);
+                    // Fazer a requisição Post para a API de usuários
+                    var response = await _httpClient.PostAsync(apiUrl,content);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        // Desserializar a resposta da API como Users
                         var responseContent = await response.Content.ReadAsStringAsync();
                         var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
-                        userData.Name = $"Usuário {DateTime.Now}"; // Ou use um campo de nome de Users, se existir
-
-                        // Armazenar dados do usuário (ex.: em sessão) para autenticação
-                        HttpContext.Session.SetString("UserEmail", model.Email);
+                        userData.Email = model.Email;
+                        _logger.LogInformation($"Resposta da API: {responseContent}");
+                        // Armazenar como JSON na sessão
+                        HttpContext.Session.SetString("UserData", JsonConvert.SerializeObject(userData));
                         _logger.LogInformation("Redirecionando para SignIn após login bem-sucedido.");
-                        return RedirectToAction("SignIn");
+
+                        if (string.IsNullOrEmpty(actionDemanded))
+                        {
+                            return View("Views/Home/Index.cshtml");
+                        }
+                        
+                        return View($"Views//{actionDemanded}/{actionDemanded}.cshtml", userData);
+
                     }
                     else
                     {
                         // Logar o código de status e a resposta para depuração
                         var errorContent = await response.Content.ReadAsStringAsync();
+                        //CRIAR PAGINA PARA INFORMAR QUE HOUVE ERRO NO LOGIN
                         _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}, Resposta: {errorContent}");
                         ModelState.AddModelError("", "E-mail ou senha inválidos.");
-                        return View("Login", model);
+                        return View("Views/Login/Login.cshtml", model);
                     }
                 }
                 catch (Exception ex)
@@ -82,26 +91,8 @@ namespace Api_Entregas.Controllers
 
         [HttpGet("SignIn")]
         public IActionResult SignIn()
-        {
-            _logger.LogInformation("Método SignIn chamado com sucesso.");
-            var userEmail = HttpContext.Session.GetString("UserEmail");
-            _logger.LogInformation("UserEmail: {UserEmail}", userEmail);
-
-            if (string.IsNullOrEmpty(userEmail))
-            {
-                _logger.LogWarning("Nenhum usuário autenticado na sessão. Redirecionando para Login.");
-                return RedirectToAction("Login");
-            }
-
-            var time = DateTime.Now;
-            var model = new SignInViewModel
-            {
-                Email = userEmail,
-                Name = $"Usuário {time}"
-            };
-
-            _logger.LogInformation($"Renderizando a view SignIn.cshtml com o modelo: Email={model.Email}, Name={model.Name}");
-            return View("SignIn", model);
+        {           
+            return View();
         }
 
         [HttpGet("Error")]

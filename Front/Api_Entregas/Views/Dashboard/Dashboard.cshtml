@@ -1,0 +1,74 @@
+@using Api_Entregas.ViewModels
+@model SignInViewModel
+@{
+    ViewData["Title"] = "Dashboard de Cobranças";
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+</head>
+
+<body>
+
+        <div class="letreiros">
+            <div class="letreiro_financeiro">
+                <h1>Financeiro</h1>
+            </div>
+        </div> 
+
+    <div class="container">
+        <div class="left-panel">
+            <h2>Títulos Abertos - Mês Atual</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>01/05/2025</td>
+                        <td>Aula de Matemática</td>
+                        <td>R$ 40,00</td>
+                        <td>Em Aberto</td>
+                    </tr>
+                    <tr class="highlight">
+                        <td>03/05/2025</td>
+                        <td>Aula de Português</td>
+                        <td>R$ 40,00</td>
+                        <td>Vencida</td>
+                    </tr>
+                    <!-- mais linhas... -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="right-panel">
+            <h2>Resumo</h2>
+            <div class="summary-box">
+                <strong>Total a Pagar:</strong> R$ 320,00
+            </div>
+            <div class="summary-box">
+                <strong>Pagamentos Realizados:</strong> R$ 120,00
+            </div>
+            <div class="summary-box">
+                <strong>Diferença:</strong> <span style="color: red">R$ 200,00</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 - Api_Entregas</p>
+    </footer>
+
+</body>
+</html>

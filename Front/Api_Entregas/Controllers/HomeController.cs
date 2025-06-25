@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Api_Entregas.Models;
+using Api_Entregas.ViewModels;
 
 namespace Api_Entregas.Controllers;
 
