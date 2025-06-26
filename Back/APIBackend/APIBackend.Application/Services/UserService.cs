@@ -159,6 +159,10 @@ public class UserService : IUserService
         // Chamar o repositório para atualizar o usuário
         var updatedUser = await _userRepository.UpdateUserAsync(userToUpdate);
 
+        // Verificar se o usuário foi atualizado
+        if (updatedUser == null)
+            throw new Exception("Usuário não atualizado");
+
         // Retornar o DTO mapeado do usuário atualizado
         return _mapper.Map<UserUpdateFromUserDTO>(updatedUser);
     }    

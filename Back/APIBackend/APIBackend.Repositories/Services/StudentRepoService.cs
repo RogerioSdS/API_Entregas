@@ -10,21 +10,21 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
 {
     private readonly ApiDbContext _context = context;
 
-    public async Task<Student> AddStudentAsync(Student user)
+    public async Task<Student> AddStudentAsync(Student student)
     {
-        if (user == null)
-            throw new ArgumentNullException(nameof(user), "Os campos do cadastro do estudante não podem ser nulos.");
+        if (student == null)
+            throw new ArgumentNullException(nameof(student), "Os campos do cadastro do estudante não podem ser nulos.");
 
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            _context.Students.Add(user);
+            _context.Students.Add(student);
             await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
-            return user;
+            return student;
         }
         catch
         {
@@ -33,32 +33,11 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
         }
     }
 
-    public async Task<bool> DeleteStudentAsync(int? id)
+
+    public async Task<List<Student>?> GetStudentAsync()
     {
-        if (id == null)
-            throw new ArgumentNullException("O ID do estudante não pode ser nulo.");
-
-        using var transaction = await _context.Database.BeginTransactionAsync();
-
-        try
-        {
-            var existingUser = await _context.Students.FirstOrDefaultAsync(u => u.Id == id);
-
-            if (existingUser == null)
-                throw new InvalidOperationException("Estudante não encontrado.");
-
-            _context.Students.Remove(existingUser);
-            var confirmed = await _context.SaveChangesAsync();
-
-            await transaction.CommitAsync();
-
-            return confirmed > 0;
-        }
-        catch
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
+        return await _context.Students
+            .ToListAsync();
     }
 
     public async Task<Student>? GetStudentByIdAsync(int? id)
@@ -75,9 +54,11 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
         return existingUser;
     }
 
-    public async Task<Student?> GetStudentByNameAsync(string name)
+    public async Task<List<Student>?> GetStudentByNameAsync(string name)
     {
-        return await _context.Students.FirstOrDefaultAsync(u => u.FirstName == name);
+        return await _context.Students
+            .Where(u => u.FirstName == name)
+            .ToListAsync();
     }
 
     public async Task<Student> UpdateStudentAsync(Student user)
@@ -100,6 +81,34 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
             await transaction.CommitAsync();
 
             return user;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+    
+    public async Task<bool> DeleteStudentAsync(int? id)
+    {
+        if (id == null)
+            throw new ArgumentNullException("O ID do estudante não pode ser nulo.");
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var existingUser = await _context.Students.FirstOrDefaultAsync(u => u.Id == id);
+
+            if (existingUser == null)
+                throw new InvalidOperationException("Estudante não encontrado.");
+
+            _context.Students.Remove(existingUser);
+            var confirmed = await _context.SaveChangesAsync();
+
+            await transaction.CommitAsync();
+
+            return confirmed > 0;
         }
         catch
         {

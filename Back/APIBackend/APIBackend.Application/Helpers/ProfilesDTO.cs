@@ -20,6 +20,7 @@ namespace APIBackend.Application.Helpers
             CreateMap<LoginDTO, User>().ReverseMap();
             CreateMap<RefreshTokenDTO, RefreshToken>().ReverseMap();
             CreateMap<RefreshTokenRequestDTO, RefreshToken>().ReverseMap();
+            CreateMap<StudentDTO, Student>().ReverseMap();
 
         }
 
