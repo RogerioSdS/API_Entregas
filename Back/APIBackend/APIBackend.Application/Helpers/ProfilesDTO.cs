@@ -8,12 +8,9 @@ namespace APIBackend.Application.Helpers
        
         public ProfilesDTO()
         {
-            /// <summary>
-            /// Mapeia a entidade <"Evento"/> para o objeto <"EventoDTO"/> e vice-versa.
-            /// </summary>
-            /// <remarks>
-            /// Essa mapeamento é realizado usando a biblioteca AutoMapper.
-            /// </remarks>
+            // Mapeia a entidade <"Evento"/> para o objeto <"EventoDTO"/> e vice-versa.
+            // Essa mapeamento é realizado usando a biblioteca AutoMapper.
+
             CreateMap<User, UserDTO>().ReverseMap();
             CreateMap<UserUpdateFromUserDTO, User>().ReverseMap();
             CreateMap<UserUpdateFromAdminDTO, User>().ReverseMap();
@@ -24,7 +21,7 @@ namespace APIBackend.Application.Helpers
 
         }
 
-        /// <summary>
+        /*
         /// O AutoMapper é uma biblioteca de mapeamento de objetos que permite mapear
         /// automaticamente objetos de uma classe para outra, transformando os dados de uma
         /// classe em uma outra de acordo com as regras de mapeamento definidas.
@@ -32,6 +29,6 @@ namespace APIBackend.Application.Helpers
         /// Ele é muito útil quando temos classes com propriedades similares ou iguais,
         /// mas com nomes diferentes. Com o AutoMapper, podemos definir regras de
         /// mapeamento de forma simples, evitando código repetitivo e propenso a erros.
-        /// </summary>
+        */
     }
 }

@@ -11,10 +11,12 @@ namespace APIBackend.API.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IStudentService _studentService;
 
-        public AdminController(IUserService userService)
+        public AdminController(IUserService userService, IStudentService studentService)
         {
             _userService = userService;
+            _studentService = studentService;
         }
 
         [HttpGet("getAllUsers")]
@@ -38,28 +40,29 @@ namespace APIBackend.API.Controllers
             }
 
             return Ok(users);
-        }        
+        }
 
         [HttpPut("UpdateUser")]
         public async Task<IActionResult> UpdateUser([FromBody] UserUpdateFromAdminDTO model)
         {
-            if (model == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Usuário não pode ser nulo.");
+                return BadRequest("Todos os campos obrigatórios devem ser preenchidos.");
             }
-
-            if (model.Email == null || model.Email == string.Empty)
+            try
             {
-                return BadRequest("Email do usuário inválido.");
-            }
+                var result = await _userService.UpdateUserFromAdminAsync(model);
 
-            var result = await _userService.UpdateUserFromAdminAsync(model);
-            if (result == null)
+                return Ok(result);
+            }
+            catch (NullReferenceException ex)
             {
-                return BadRequest("Erro ao atualizar usuário.");
+                return NotFound($"Erro: {ex.Message}");
             }
-
-            return Ok(result);
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
+            }
         }
 
         [HttpDelete("DeleteUser")]
@@ -70,14 +73,51 @@ namespace APIBackend.API.Controllers
                 return BadRequest("Id do usuário inválido.");
             }
 
-            var result = await _userService.DeleteUserAsync(id);
-            if (!result)
+            try
             {
-                return NotFound("Usuário não encontrado ou erro ao deletar.");
+                var result = await _userService.DeleteUserAsync(id);
+
+                return NoContent();
+            }
+            catch (NullReferenceException)
+            {
+                return NotFound("Usuário não encontrado.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro interno do servidor ao deletar usuário.{ex.Message}");
+            }
+        }
+
+        [HttpDelete("DeleteStudent")]
+        public async Task<IActionResult> DeleteStudent([FromQuery] int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest("Id do usuário inválido.");
             }
 
-            return NoContent();
+            try
+            {
+                var result = await _studentService.DeleteStudentAsync(id);
+
+                return NoContent();
+            }
+            catch (Exception ex) when (ex is ArgumentNullException || ex is ArgumentOutOfRangeException || ex is InvalidOperationException)
+            {
+                return BadRequest($"Erro ao deletar estudante: {ex.Message}");
+            }
+            catch (NullReferenceException)
+            {
+                return NotFound("Estudante não encontrado.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro interno do servidor: {ex.Message}");
+            }
         }
+        
+                
     }
 }
 

@@ -12,9 +12,6 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
 
     public async Task<Student> AddStudentAsync(Student student)
     {
-        if (student == null)
-            throw new ArgumentNullException(nameof(student), "Os campos do cadastro do estudante não podem ser nulos.");
-
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try

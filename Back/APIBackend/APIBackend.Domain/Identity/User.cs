@@ -19,9 +19,9 @@ public class User : IdentityUser<int>
     public string ZipCode { get; set; } = string.Empty;
     public string? City { get; set; }
     public string? Description { get; set; }
-    public ICollection<Student> Students { get; set; } = new List<Student>();
     [NotMapped]
     public required string Role { get; set; }
+    public decimal AgreedPrice { get; set; }
     public bool SignInAfterCreation { get; set; } = false;
     public decimal? CreditLimit { get; set; }
     public bool IsAdmin { get; set; } = false;
@@ -29,5 +29,6 @@ public class User : IdentityUser<int>
     public string? CreditCardNumber { get; set; }
     public int FatureDay { get; set; } = 5;
     public IEnumerable<UserRole> UserRoles { get; set; } = new List<UserRole>();
+    public ICollection<Student> Students { get; set; } = new List<Student>();
     public IEnumerable<RefreshToken> RefreshToken { get; set; } = new List<RefreshToken>();
 }

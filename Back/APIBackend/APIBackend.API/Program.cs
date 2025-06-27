@@ -50,7 +50,7 @@ builder.Services.AddScoped<IUserRepo, UserRepoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
 builder.Services.AddScoped<IStudentRepo, StudentRepoService>();
-builder.Services.AddScoped<iStudentService, StudentService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
 
 // Configurar o NLog como provedor de logging
 builder.Logging.ClearProviders(); // Remover provedores padrão (ex.: Console)

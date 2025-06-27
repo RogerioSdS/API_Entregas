@@ -10,9 +10,9 @@ namespace APIBackend.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StudentController(iStudentService studentService) : ControllerBase
+    public class StudentController(IStudentService studentService) : ControllerBase
     {
-        private readonly iStudentService _studentService = studentService;
+        private readonly IStudentService _studentService = studentService;
         protected Logger _loggerNLog = LogManager.GetCurrentClassLogger();
 
         [AllowAnonymous]
@@ -28,6 +28,7 @@ namespace APIBackend.API.Controllers
 
             try
             {
+                var teste = _studentService.AddStudentAsync(model);
                 var result = await _studentService.AddStudentAsync(model);
                 _loggerNLog.Info($"Usuário criado com sucesso: {result.FirstName} {result.LastName} - {result.Email}");
 

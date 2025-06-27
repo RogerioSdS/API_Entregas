@@ -23,15 +23,6 @@ public class UserService : IUserService
         _validRoles = configuration.GetSection("UserRoles:ValidRoles").Get<List<string>>() ?? new List<string>();
     }
 
-    /// <summary>
-    /// Adiciona um novo usuário ao sistema.
-    /// </summary>
-    /// <param name="userDTO">Os dados do usuário a serem cadastrados.</param>
-    /// <param name="role">A função (role) que o usuário terá no sistema.</param>
-    /// <param name="password">A senha do usuário.</param>
-    /// <param name="signInAfterCreation">Indica se o usuário deve ser autenticado automaticamente após a criação.</param>
-    /// <returns>Retorna um objeto <see cref="UserDTO"/> com os dados do usuário criado.</returns>
-    /// <exception cref="Exception">Lançada quando ocorre um erro ao adicionar o usuário.</exception>
     public async Task<UserDTO> AddUserAsync(UserDTO model)
     {
         var user = _mapper.Map<User>(model);
@@ -52,10 +43,6 @@ public class UserService : IUserService
         }
     }
 
-    /// <summary>
-    /// Retorna uma lista com todos os usuários do sistema.
-    /// </summary>
-    /// <returns>Retorna uma lista de <see cref="UserDTO"/> com todos os usuários.</returns>
     public async Task<List<UserDTO>> GetUsersAsync()
     {
         var users = await _userRepository.GetUsersAsync();
@@ -83,27 +70,13 @@ public class UserService : IUserService
         return _mapper.Map<LoginDTO>(user);        
     }
 
-    /// <summary>
-    /// Retorna o usuário com o id especificado.
-    /// </summary>
-    /// <param name="id">O id do usuário a ser retornado.</param>
-    /// <returns>Retorna o objeto <see cref="UserDTO"/> que representa o usuário se encontrado, caso contrário retorna null.</returns>
-    /// <exception cref="ArgumentOutOfRangeException">Lançada quando o id do usuário é menor ou igual a zero.</exception>
     public async Task<UserDTO> GetUserByIdAsync(int id)
     {
-        if (id <= 0)
-            throw new ArgumentOutOfRangeException(nameof(id), "Id do usuário inválido");
-
         var user = await _userRepository.GetUserByIdAsync(id);
 
         return _mapper.Map<UserDTO>(user);
     }
 
-    /// <summary>
-    /// Retorna o usuário com o nome especificado.
-    /// </summary>
-    /// <param name="name">O nome do usuário a ser retornado.</param>
-    /// <returns>Retorna o objeto <see cref="UserDTO"/> que representa o usuário se encontrado, caso contrário retorna null.</returns>
     public async Task<List<object>> GetUserByNameAsync(string name)
     {
         var allUsers = await _userRepository.GetUsersAsync();
@@ -126,25 +99,12 @@ public class UserService : IUserService
         return usersWithRoles;
     }
 
-
-    /// <summary>
-    /// Realiza o login de um usuário no sistema.
-    /// </summary>
-    /// <param name="user">O usuário que será autenticado.</param>
-    /// <returns>Retorna uma tarefa assíncrona que representa o processo de autenticação.</returns>
-    /// <exception cref="ArgumentNullException">Lançada quando o usuário é nulo.</exception>
     public async Task AuthAsync(User user)
     {
         // apontar para auth controller
         throw new NotImplementedException();
     }
 
-    /// <summary>
-    /// Atualiza os dados de um usuário no sistema.
-    /// </summary>
-    /// <param name="userDTO">Os novos dados do usuário.</param>
-    /// <returns>Retorna o objeto <see cref="UserDTO"/> com os dados do usuário atualizado.</returns>
-    /// <exception cref="ArgumentNullException">Lançada quando o objeto <see cref="UserDTO"/> é nulo.</exception>
     public async Task<UserUpdateFromUserDTO> UpdateUserFromUserAsync(UserUpdateFromUserDTO userDTO)
     {
         // Buscar o usuário existente do banco
@@ -184,29 +144,16 @@ public class UserService : IUserService
         return _mapper.Map<UserUpdateFromAdminDTO>(updatedUser);
     }    
 
-    /// <summary>
-    /// Exclui um usuário do sistema.
-    /// </summary>
-    /// <param name="userDTO">Os dados do usuário a ser excluído.</param>
-    /// <returns>Retorna uma tarefa assíncrona que representa o processo de exclusão. Retorna <c>true</c> se o usuário foi excluído com sucesso.</returns>
-    /// <exception cref="ArgumentNullException">Lançada quando o objeto <see cref="UserDTO"/> é nulo.</exception>
     public async Task<bool> DeleteUserAsync(int id)
     {
-        if (id <= 0)
-            throw new ArgumentException("Id do usuário inválido", nameof(id));
-
         var user = await _userRepository.GetUserByIdAsync(id);
+
         if (user == null)
             throw new ArgumentNullException(nameof(user), "Usuário não encontrado");
 
         return await _userRepository.DeleteUserAsync(user);
     }
 
-    /// <summary>
-    /// Retorna a lista de funções (roles) associadas a um usuário.
-    /// </summary>
-    /// <param name="userDTO">Os dados do usuário para o qual as funções serão retornadas.</param>
-    /// <returns>Retorna uma lista de strings representando as funções associadas ao usuário.</returns>
     public async Task<List<string>> GetRolesAsync(UserDTO userDTO)
     {
         var user = _mapper.Map<User>(userDTO);

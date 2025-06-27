@@ -205,14 +205,14 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         {
             var smtpClient = new SmtpClient(_configuration["Smtp:Host"])
             {
-                Port = int.Parse(_configuration["Smtp:Port"]),
+                Port = int.Parse(_configuration["Smtp:Port"] ?? "587"), // Padrão 587 para TLS
                 Credentials = new NetworkCredential(_configuration["Smtp:Username"], _configuration["Smtp:Password"]),
                 EnableSsl = true,
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(_configuration["Smtp:From"]),
+                From = new MailAddress(_configuration["Smtp:From"] ?? ""),
                 Subject = subject,
                 Body = message,
                 IsBodyHtml = true,

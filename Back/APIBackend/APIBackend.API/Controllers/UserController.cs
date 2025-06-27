@@ -75,16 +75,21 @@ namespace APIBackend.API.Controllers
 
                 return StatusCode(500, "Erro interno ao criar usuário.");
             }
-            
+
         }
 
         [HttpGet("getUserById")]
         public async Task<IActionResult> GetUserById([FromQuery] int id)
         {
+            if (id <= 0)
+            {
+                return BadRequest("ID do usuário deve ser um número positivo.");
+            }
+
             try
             {
                 var user = await _userService.GetUserByIdAsync(id);
-                
+
                 return Ok(new { User = user, Roles = await _userService.GetRolesAsync(user) });
             }
             catch (ArgumentOutOfRangeException ex)
@@ -98,12 +103,17 @@ namespace APIBackend.API.Controllers
                 _loggerNLog.Error(ex, $"Erro ao buscar usuário com ID: {id}");
 
                 return StatusCode(500, "Erro interno ao buscar usuário.");
-            }   
+            }
         }
 
         [HttpGet("getUserByName")]
         public async Task<IActionResult> GetUserByName([FromQuery] string name)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                return BadRequest("Nome do usuário deve ser informado.");
+            }
+
             var user = await _userService.GetUserByNameAsync(name);
             if (user == null)
             {
@@ -116,7 +126,7 @@ namespace APIBackend.API.Controllers
         [HttpPut("UpdateUserDetails")]
         public async Task<IActionResult> UpdateUserDetails([FromBody] UserUpdateFromUserDTO model)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
@@ -125,17 +135,17 @@ namespace APIBackend.API.Controllers
             {
                 var result = await _userService.UpdateUserFromUserAsync(model);
 
-                return Ok(result);                
+                return Ok(result);
             }
             catch (ArgumentNullException ex)
             {
                 return BadRequest("usuario não encontrado ou campos inválidos: " + ex.Message);
-            }   
+            }
             catch (Exception ex)
             {
                 return StatusCode(500, "Erro interno ao atualizar usuário." + ex.Message);
             }
 
-        }        
+        }
     }
 }

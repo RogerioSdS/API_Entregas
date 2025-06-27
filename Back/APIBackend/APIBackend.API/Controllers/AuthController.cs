@@ -83,8 +83,9 @@ namespace APIBackend.API.Controllers
             }
             if (urlToTokenConfirmedEmail.Contains("E-mail já estava confirmado"))
             {
-               _loggerNLog.Info($"E-mail já estava confirmado: {model.Email}");
-               return BadRequest("E-mail já estava confirmado.");
+                _loggerNLog.Info($"E-mail já estava confirmado: {model.Email}");
+
+                return BadRequest("E-mail já estava confirmado.");
             }
 
             _loggerNLog.Info($"Token de confirmação de e-mail gerado com sucesso para: {model.Email} usando o tokenUrl: {urlToTokenConfirmedEmail}");
@@ -104,6 +105,7 @@ namespace APIBackend.API.Controllers
                 if (!result)
                 {
                     Console.WriteLine($"Erro ao confirmar token: {token}");
+
                     _loggerNLog.Info($"Token invalido para confirmar o e-mail: {email}");
                     return BadRequest("Token inválido.");
                 }
@@ -115,6 +117,7 @@ namespace APIBackend.API.Controllers
             catch (System.Exception)
             {
                 Console.WriteLine($"Erro ao confirmar e-mail: {email}");
+
                 return BadRequest("Erro ao confirmar o e-mail.");
             }
         }
@@ -134,7 +137,7 @@ namespace APIBackend.API.Controllers
             _loggerNLog.Info($"Token de redefinição de senha gerado com sucesso para: {model.Email} tokenUrl: {urlToTokenConfirmedEmail}");
 
             return Ok(new { Token = urlToTokenConfirmedEmail });
-        }        
+        }
 
         [HttpPost("ConfirmResetPassword")]
         [AllowAnonymous]
@@ -149,6 +152,7 @@ namespace APIBackend.API.Controllers
                 {
                     Console.WriteLine($"Erro ao confirmar token: {token}");
                     _loggerNLog.Info($"Token invalido para redefinir a senha do e-mail: {email}");
+
                     return BadRequest("Token inválido.");
                 }
 
@@ -159,6 +163,7 @@ namespace APIBackend.API.Controllers
             catch (System.Exception)
             {
                 Console.WriteLine($"Erro ao redefinir senha para o e-mail: {email}");
+                
                 return BadRequest("Erro ao redefinir a senha.");
             }
         }

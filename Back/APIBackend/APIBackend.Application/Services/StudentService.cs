@@ -7,7 +7,7 @@ using AutoMapper;
 
 namespace APIBackend.Application.Services;
 
-public class StudentService(IMapper mapper, IStudentRepo studentRepo) : iStudentService
+public class StudentService(IMapper mapper, IStudentRepo studentRepo) : IStudentService
 {
     private readonly IMapper _mapper = mapper;
     private readonly IStudentRepo _studentRepo = studentRepo;
@@ -77,9 +77,6 @@ public class StudentService(IMapper mapper, IStudentRepo studentRepo) : iStudent
     
     public async Task<bool> DeleteStudentAsync(int id)
     {
-        if (id <= 0)
-            throw new ArgumentOutOfRangeException(nameof(id), "O ID do estudante deve ser um número positivo.");
-
         var student = await GetStudentByIdAsync(id);  
 
         if (student == null)
