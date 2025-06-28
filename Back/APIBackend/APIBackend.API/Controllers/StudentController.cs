@@ -8,7 +8,8 @@ using NLog;
 
 namespace APIBackend.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize(Roles = "Manager,Admin")]
+    [Route("api/student")]
     [ApiController]
     public class StudentController(IStudentService studentService) : ControllerBase
     {
@@ -21,6 +22,7 @@ namespace APIBackend.API.Controllers
         {
             // Verifica se o modelo recebido (ex.: DTO com dados enviados pelo cliente) atende às regras de validação definidas
             // (ex.: [Required], [StringLength], [EmailAddress] em propriedades do DTO).
+            Console.WriteLine(ModelState.IsValid);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -28,7 +30,6 @@ namespace APIBackend.API.Controllers
 
             try
             {
-                var teste = _studentService.AddStudentAsync(model);
                 var result = await _studentService.AddStudentAsync(model);
                 _loggerNLog.Info($"Usuário criado com sucesso: {result.FirstName} {result.LastName} - {result.Email}");
 
@@ -136,34 +137,6 @@ namespace APIBackend.API.Controllers
             catch (Exception ex)
             {
                 _loggerNLog.Error($"Erro inesperado ao atualizar estudante com o nome: {ex.Message}");
-
-                return StatusCode(500, "Erro interno do servidor.");
-            }
-        }
-
-        [HttpDelete("DeleteStudent")]
-        public async Task<IActionResult> DeleteStudent([FromQuery] int id)
-        {
-            if (id <= 0)
-            {
-                return BadRequest("O ID do estudante deve ser um número positivo.");
-            }
-
-            try
-            {
-                var result = await _studentService.DeleteStudentAsync(id);
-
-                return NoContent();
-            }
-            catch  (Exception ex) when (ex is ArgumentNullException || ex is ArgumentOutOfRangeException || ex is InvalidOperationException)
-            {
-                _loggerNLog.Error($"Erro inesperado ao deletar estudante com ID {id}: {ex.Message}");
-
-                return NotFound($"Estudante com ID {id} não encontrado.");
-            }
-            catch (Exception ex)
-            {
-                _loggerNLog.Error($"Erro inesperado ao deletar estudante com ID {id}: {ex.Message}");
 
                 return StatusCode(500, "Erro interno do servidor.");
             }

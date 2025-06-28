@@ -51,6 +51,8 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
 builder.Services.AddScoped<IStudentRepo, StudentRepoService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IClassDetailsService, ClassDetailsService>();
+builder.Services.AddScoped<IClassDetailsRepo, ClassDetailsRepoService>();
 
 // Configurar o NLog como provedor de logging
 builder.Logging.ClearProviders(); // Remover provedores padrão (ex.: Console)
@@ -100,7 +102,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"], // Ex.: "sua-api"
         ValidAudience = builder.Configuration["Jwt:Audience"], // Ex.: "sua-api-cliente"
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])) // Chave secreta
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("A chave de assinatura JWT não foi configurada."))) // Chave secreta
     };
 });
 

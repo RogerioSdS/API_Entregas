@@ -66,7 +66,7 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
             new Claim(ClaimTypes.Role, user.Role )
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key está faltando na configuração.")));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -314,9 +314,24 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
             return null;
         }
 
-        var urlToTokenConfirmedEmail = $"{_configuration["Url:ApiUrl"]}/api/Auth/ConfirmEmail?email={HttpUtility.UrlEncode(model.Email)}&token={HttpUtility.UrlEncode(token)}";
+        var urlToResetPassword = $"{_configuration["Url:ApiUrl"]}/api/Auth/ConfirmEmail?email={HttpUtility.UrlEncode(model.Email)}&token={HttpUtility.UrlEncode(token)}";
 
-        return urlToTokenConfirmedEmail;
+        try
+        {
+            var message = $@"<h3>Redefinir sua senha</h3>
+                    <p>Você solicitou a redefinição de senha. Clique no link abaixo para redefinir:</p>
+                    <p><a href='{urlToResetPassword}'>Redefinir senha</a></p>";
+
+            await SendEmailAsync(model.Email, "Redefinir senha", message);
+            _loggerNLog.Info($"E-mail de redefinição de senha enviado para: {model.Email}");
+        }
+        catch (Exception ex)
+        {
+            _loggerNLog.Error(ex, $"Erro ao enviar e-mail de redefinição de senha para: {model.Email}");
+            return null;
+        }
+
+        return urlToResetPassword;
     }
 
     public async Task<bool> ConfirmResetPasswordAsync(string email, string token, string newPassword)

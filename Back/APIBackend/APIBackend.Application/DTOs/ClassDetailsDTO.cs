@@ -6,10 +6,10 @@ namespace APIBackend.Application.DTOs;
 
 public class ClassDetailsDTO
 {
-    public required int StudentId { get; set; }
+    public int StudentId { get; set; }
     public required ClassType ClassType { get; set; }
-    public required Student Student { get; set; }
-    public DateTime DateOfClass { get; set; }
+    public Student? Student { get; set; }
+    public required DateTime DateOfClass { get; set; } 
+    public DateTime DtModified { get; set; } = DateTime.Now;
     public required int QuantityHourClass { get; set; }
-
 }

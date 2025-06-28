@@ -6,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace APIBackend.Repositories.Services;
 
-public class ClassDetailsRepo : IClassDetailsRepo
+public class ClassDetailsRepoService : IClassDetailsRepo
 {
     protected readonly ApiDbContext _context;
 
-    public ClassDetailsRepo(ApiDbContext context)
+    public ClassDetailsRepoService(ApiDbContext context)
     {
         _context = context;
     }
@@ -27,27 +27,54 @@ public class ClassDetailsRepo : IClassDetailsRepo
 
             return classDetails;
         }
-        catch
+        catch(Exception ex)
         {
             await transaction.RollbackAsync();
-            throw new InvalidOperationException("Erro ao adicionar aula.");
+             var errorMessage = ex.InnerException != null
+                ? $"Erro interno: {ex.InnerException.Message}"
+                : ex.Message;
+
+            throw new InvalidOperationException("Erro ao adicionar o estudante. " + errorMessage, ex);
         }        
     }
-    
-    public async Task<ClassDetails?> GetClassDetailsByIdAsync(int classId)
-    {
-        return await _context.ClassDetails.FindAsync(classId);
+
+    public async Task<IEnumerable<ClassDetails>> GetAllClassesByDateAsync(string? dateFrom, string? dateTo, int? studentId = null)
+    {         
+        var query = _context.ClassDetails.AsQueryable();
+
+        if (!string.IsNullOrEmpty(dateFrom))
+        {
+            if (DateTime.TryParse(dateFrom, out var fromDate))
+            {
+                query = query.Where(cd => cd.DateOfClass >= fromDate);
+            }
+        }
+
+        if (!string.IsNullOrEmpty(dateTo))
+        {
+            if (DateTime.TryParse(dateTo, out var toDate))
+            {
+                query = query.Where(cd => cd.DateOfClass <= toDate);
+            }
+        }
+
+        if (studentId.HasValue)
+        {
+            query = query.Where(cd => cd.StudentId == studentId.Value);
+        }
+
+        return await query.ToListAsync();
     }
 
-    public async Task<ClassDetails?> GetClassDetailsByStudentIdAsync(int studentId)
+    public async Task<ClassDetails?> GetClassesDetailsStudentIdAsync(int studentId)    
     {
         return await _context.ClassDetails
             .FirstOrDefaultAsync(cd => cd.StudentId == studentId);
     }
 
-    public Task<ClassDetails?> GetClassDetailsByTeacherIdAsync(int teacherId)
+    public async Task<ClassDetails?> GetClassDetailsByIdAsync(int classId)
     {
-        throw new NotImplementedException();
+        return await _context.ClassDetails.FindAsync(classId);
     }
 
     public async Task<ClassDetails> UpdateClassDetailsAsync(ClassDetails classDetails)
@@ -60,8 +87,13 @@ public class ClassDetailsRepo : IClassDetailsRepo
             if (classFound == null)
             {
                 throw new NullReferenceException("Aula não encontrada.");
-            }
+            }            
 
+            classFound.ClassType = classDetails.ClassType;
+            classFound.DateOfClass = classDetails.DateOfClass;
+            classFound.QuantityHourClass = classDetails.QuantityHourClass;
+            classFound.StudentId = classDetails.StudentId;
+            classFound.DtModified = DateTime.Now;
             _context.ClassDetails.Update(classFound);
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();

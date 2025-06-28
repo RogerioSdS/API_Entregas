@@ -24,10 +24,11 @@ public class ClassDetailsService : IClassDetailsService
     {
         var classDetails = _mapper.Map<ClassDetails>(classDetailsDTO);
 
-        if (String.IsNullOrEmpty(classDetails.DateOfClass.ToString()))
+        if (classDetails.DateOfClass == default)
         {
             classDetails.DateOfClass = DateTime.Now;
         }
+
         try
         {
             var result = await _classDetailsRepo.AddClassDetailsAsync(classDetails);
@@ -35,12 +36,15 @@ public class ClassDetailsService : IClassDetailsService
 
             return _mapper.Map<ClassDetailsDTO>(result);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Erro desconhecido para adicionar aula.");
+            var errorMessage = ex.InnerException != null
+               ? $"Erro interno: {ex.InnerException.Message}"
+               : ex.Message;
+
+            throw new InvalidOperationException("Erro ao adicionar o estudante. " + errorMessage, ex);
         }
     }
-
     public async Task<ClassDetailsDTO?> GetClassDetailsByIdAsync(int classId)
     {
         var classDetails = await _classDetailsRepo.GetClassDetailsByIdAsync(classId);
@@ -49,23 +53,49 @@ public class ClassDetailsService : IClassDetailsService
         return classDetailsDTO;
     }
 
-    public Task<ClassDetailsDTO?> GetClassDetailsByStudentIdAsync(int studentId)
+    public async Task<ClassDetailsDTO?> GetClassDetailsByStudentIdAsync(int studentId)
     {
-        throw new NotImplementedException();
+        var classDetails = await _classDetailsRepo.GetClassesDetailsStudentIdAsync(studentId);
+        if (classDetails == null)
+        {
+            throw new NullReferenceException("Aula não encontrada para o estudante com ID: " + studentId); 
+        }
+
+        var classDetailsDTO = _mapper.Map<ClassDetailsDTO>(classDetails);
+        return classDetailsDTO;
     }
 
-    public Task<ClassDetailsDTO?> GetClassDetailsByTeacherIdAsync(int teacherId)
+    public async Task<IEnumerable<ClassDetailsDTO>?> GetAllClassesDetailsByDateAsync(string? dateFrom, string? dateTo, int? studentId = null)
     {
-        throw new NotImplementedException();
+        var classDetails = await _classDetailsRepo.GetAllClassesByDateAsync(dateFrom, dateTo, studentId);
+        var classDetailsDTO = _mapper.Map<IEnumerable<ClassDetailsDTO>>(classDetails);
+        return classDetailsDTO;
+        
+    }
+    
+    public async Task<ClassDetailsDTO> UpdateClassDetailsAsync(ClassDetailsUpdateDTO classDetailsDTO)
+    {
+        var classDetails = _mapper.Map<ClassDetails>(classDetailsDTO);
+        var classDetailsToUpdate = await _classDetailsRepo.GetClassDetailsByIdAsync(classDetails.Id);
+        if (classDetailsToUpdate == null)
+        {
+            throw new NullReferenceException("Aula não encontrada.");
+        }
+
+        await _classDetailsRepo.UpdateClassDetailsAsync(classDetailsToUpdate);
+        return _mapper.Map<ClassDetailsDTO>(classDetailsToUpdate);
     }
 
-    public Task<ClassDetailsDTO> UpdateClassDetailsAsync(ClassDetailsDTO classDetails)
+    public async Task<bool> DeleteClassDetailsAsync(int classId)
     {
-        throw new NotImplementedException();
-    }
+        var classDetailsToDelete = _classDetailsRepo.GetClassDetailsByIdAsync(classId);
+        if (classDetailsToDelete == null)
+        {
+            throw new NullReferenceException("Aula não encontrada.");
+        }
 
-    public Task<bool> DeleteClassDetailsAsync(int classId)
-    {
-        throw new NotImplementedException();
+        await _classDetailsRepo.DeleteClassDetailsAsync(classId);
+        
+        return true;
     }
 }

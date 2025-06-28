@@ -8,6 +8,7 @@ namespace APIBackend.Application.DTOs
         public string? Complement { get; set; }
         public string ZipCode { get; set; } = string.Empty;
         public string? City { get; set; }
+        public string? Email { get; set; }
         public string? Description { get; set; }
         public string? Role { get; set; }
         public decimal? AgreedPrice { get; set; }

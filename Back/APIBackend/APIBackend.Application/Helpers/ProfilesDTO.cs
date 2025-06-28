@@ -5,7 +5,7 @@ namespace APIBackend.Application.Helpers
 {
     public class ProfilesDTO : AutoMapper.Profile
     {
-       
+
         public ProfilesDTO()
         {
             // Mapeia a entidade <"Evento"/> para o objeto <"EventoDTO"/> e vice-versa.
@@ -18,7 +18,7 @@ namespace APIBackend.Application.Helpers
             CreateMap<RefreshTokenDTO, RefreshToken>().ReverseMap();
             CreateMap<RefreshTokenRequestDTO, RefreshToken>().ReverseMap();
             CreateMap<StudentDTO, Student>().ReverseMap();
-
+            CreateMap<ClassDetailsDTO, ClassDetails>().ReverseMap();
         }
 
         /*

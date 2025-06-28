@@ -12,6 +12,13 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
 
     public async Task<Student> AddStudentAsync(Student student)
     {
+        if (!DateTime.TryParseExact(student.DateOfBirth, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
+        {
+            throw new ArgumentException("Data de nascimento inválida. Use o formato dd/MM/yyyy.");
+        }
+
+        student.DateOfBirth = parsedDate.ToString("dd/MM/yyyy");
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -23,10 +30,15 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
 
             return student;
         }
-        catch
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            throw;
+
+            var errorMessage = ex.InnerException != null
+                ? $"Erro interno: {ex.InnerException.Message}"
+                : ex.Message;
+
+            throw new InvalidOperationException("Erro ao adicionar o estudante. " + errorMessage, ex);
         }
     }
 
