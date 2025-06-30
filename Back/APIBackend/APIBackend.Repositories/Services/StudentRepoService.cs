@@ -12,12 +12,13 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
 
     public async Task<Student> AddStudentAsync(Student student)
     {
-        if (!DateTime.TryParseExact(student.DateOfBirth, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
+        if (!string.IsNullOrEmpty(student.DateOfBirth) )
         {
-            throw new ArgumentException("Data de nascimento inválida. Use o formato dd/MM/yyyy.");
-        }
+            if (!DateTime.TryParseExact(student.DateOfBirth, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
+                throw new ArgumentException("Data de nascimento inválida. Use o formato dd/MM/yyyy.");
 
-        student.DateOfBirth = parsedDate.ToString("dd/MM/yyyy");
+            student.DateOfBirth = parsedDate.ToString("dd/MM/yyyy");
+        }       
 
         using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -42,7 +43,6 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
         }
     }
 
-
     public async Task<List<Student>?> GetStudentAsync()
     {
         return await _context.Students
@@ -54,13 +54,13 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
         if (id == null)
             throw new ArgumentNullException("O ID do estudante não pode ser nulo.");
 
-        var existingUser = await _context.Students
+        var existingStudent = await _context.Students
             .FirstOrDefaultAsync(u => u.Id == id);
 
-        if (existingUser == null)
+        if (existingStudent == null)
             throw new InvalidOperationException("Estudante não encontrado.");
 
-        return existingUser;
+        return existingStudent;
     }
 
     public async Task<List<Student>?> GetStudentByNameAsync(string name)
@@ -70,26 +70,35 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
             .ToListAsync();
     }
 
-    public async Task<Student> UpdateStudentAsync(Student user)
+    public async Task<Student> UpdateStudentAsync(Student student)
     {
-        if (user == null)
-            throw new ArgumentNullException(nameof(user), "Os campos do cadastro do estudante não podem ser nulos.");
+        if (student == null)
+            throw new ArgumentNullException(nameof(student), "Os campos do cadastro do estudante não podem ser nulos.");
 
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            var existingUser = await _context.Students.FirstOrDefaultAsync(u => u.Id == user.Id);
+            var studentFound = await _context.Students.FindAsync(student.Id);
 
-            if (existingUser == null)
+            if (studentFound == null)
                 throw new InvalidOperationException("Estudante não encontrado.");
 
-            _context.Students.Update(user);
+            studentFound.FirstName = student.FirstName ?? studentFound.FirstName;
+            studentFound.LastName = student.LastName ?? studentFound.LastName;
+            studentFound.Email = student.Email ?? studentFound.Email;
+            studentFound.DateOfBirth = student.DateOfBirth ?? studentFound.DateOfBirth;
+            studentFound.PhoneNumber = student.PhoneNumber ?? studentFound.PhoneNumber;
+            studentFound.PriceClasses = student.PriceClasses ?? studentFound.PriceClasses;
+            studentFound.ResponsibleId = student.ResponsibleId ?? studentFound.ResponsibleId;
+            studentFound.Responsible = student.Responsible ?? studentFound.Responsible;
+
+            _context.Students.Update(studentFound);
             await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
 
-            return user;
+            return studentFound;
         }
         catch
         {
@@ -107,12 +116,12 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
 
         try
         {
-            var existingUser = await _context.Students.FirstOrDefaultAsync(u => u.Id == id);
+            var existingStudent = await _context.Students.FirstOrDefaultAsync(u => u.Id == id);
 
-            if (existingUser == null)
+            if (existingStudent == null)
                 throw new InvalidOperationException("Estudante não encontrado.");
 
-            _context.Students.Remove(existingUser);
+            _context.Students.Remove(existingStudent);
             var confirmed = await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();

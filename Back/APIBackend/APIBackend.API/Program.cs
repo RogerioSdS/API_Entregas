@@ -21,7 +21,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAutoMapper(typeof(ProfilesDTO).Assembly);// Registra todos os profiles no assembly
 
 // Adicione serviços para controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 
 //Configuração do banco de dados
 builder.Services.AddDbContext<ApiDbContext>(options =>
@@ -76,6 +81,32 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
+    // 🔒 Configuração do Bearer Token
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Insira o token JWT no campo abaixo. Ex: **Bearer {seu_token}**"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
     // Caminho dinâmico para o arquivo XML
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
@@ -120,11 +151,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minha API v1"));
-    app.UseDeveloperExceptionPage();        
+    app.UseDeveloperExceptionPage();
 }
 
 // Insere o seeders com os dados se a flag --seed for passada --dotnet run --seed
-if(args.Contains("--seed"))
+if (args.Contains("--seed"))
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;

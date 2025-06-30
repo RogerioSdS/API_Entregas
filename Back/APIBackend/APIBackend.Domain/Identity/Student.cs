@@ -13,5 +13,6 @@ public class Student
     public string PhoneNumber { get; set; } = string.Empty;
     public int? ResponsibleId { get; set; } 
     public User? Responsible { get; set; } = null!;
+    public decimal? PriceClasses { get; set; }
     public ICollection<ClassDetails> Classes { get; set; } = new List<ClassDetails>();
 }

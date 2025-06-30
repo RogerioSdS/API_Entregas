@@ -34,19 +34,19 @@ namespace APIBackend.API.Controllers
             {
                 var result = await _classDetailsService.AddClassDetailsAsync(model);
 
-                return Ok(result);
+                return Ok(new { result });
             }
             catch (Exception ex) when (ex is ArgumentNullException || ex is InvalidOperationException || ex is ArgumentException)
             {
                 _loggerNLog.Error($"Erro ao criar aula: {ex.Message}");
 
-                return BadRequest($"Erro ao criar aula: {ex.Message}");
+                return BadRequest(new { message = ex.Message });
             }
             catch (Exception ex)
             {
                 _loggerNLog.Error($"Erro ao criar aula: {ex.Message}");
 
-                return StatusCode(500, "Erro interno ao criar aula.");
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
@@ -55,19 +55,69 @@ namespace APIBackend.API.Controllers
         {
             if (classId <= 0)
             {
-                return BadRequest("Id da aula inválido.");
+                return BadRequest(new { message = $"{classId} Id da aula inválido." });
             }
 
             try
             {
                 var result = await _classDetailsService.GetClassDetailsByIdAsync(classId);
-                return Ok(result);
+                return Ok(new { result });
             }
             catch (Exception ex)
             {
                 _loggerNLog.Error($"Erro ao buscar aula: {ex.Message}");
 
-                return StatusCode(500, $"Erro interno ao buscar aula: {ex.Message}");
+                if (ex is NullReferenceException)
+                {
+                    return NotFound(new { message = $"Aula com ID {classId} não encontrada." });
+                }
+                return StatusCode(500, new { message = $"Erro interno ao buscar aula: {ex.Message}" });
+            }
+        }
+
+        [HttpGet("GetClassesByStudentId")]
+        public async Task<IActionResult> GetClassesByStudentId([FromQuery] int studentId)
+        {
+            if (studentId <= 0 || string.IsNullOrEmpty(studentId.ToString()))
+            {
+                return BadRequest("Id do estudante inválido.");
+            }
+
+            try
+            {
+                var result = await _classDetailsService.GetClassesDetailsByStudentIdAsync(studentId);
+
+                return Ok(result);
+            }
+            catch (NullReferenceException ex)
+            {
+                return Ok($" {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error($"Erro ao buscar aulas do estudante: {ex.Message}");
+
+                return StatusCode(500, $"Erro interno ao buscar aulas do estudante: {ex.Message}");
+            }
+        }
+
+        [HttpGet("GetAllClassesByDate")]
+        public async Task<IActionResult> GetAllClassesByDate([FromQuery] string? dateFrom, [FromQuery] string? dateTo, [FromQuery] int? studentId = null)
+        {
+            try
+            {
+                var result = await _classDetailsService.GetAllClassesDetailsByDateAsync(dateFrom, dateTo, studentId);
+                if (result == null || !result.Any())
+                {
+                    return NotFound("Nenhuma aula encontrada para o período especificado.");
+                }
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error($"Erro ao buscar aulas por data: {ex.Message}");
+
+                return StatusCode(500, $"Erro interno ao buscar aulas por data: {ex.Message}");
             }
         }
 
@@ -115,6 +165,32 @@ namespace APIBackend.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Erro interno do servidor ao deletar aula.{ex.Message}");
+            }
+        }
+
+        [HttpGet("SummaryClassDetails")]
+        public async Task<IActionResult> SummaryClassDetails(string dateFrom, string dateTo, int? studentId = null)
+        {
+            if (string.IsNullOrEmpty(dateFrom) || string.IsNullOrEmpty(dateTo))
+            {
+                return BadRequest("As datas de início e fim são obrigatórias.");
+            }
+
+            try
+            {
+                var result = await _classDetailsService.GetClassesSummaryAsync(dateFrom, dateTo, studentId);
+
+                return Ok(result);
+            }
+            catch (NullReferenceException ex)
+            {
+                return NotFound($"Erro: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error($"{ex.Message}");
+
+                return StatusCode(500, $"{ex.Message}");
             }
         }
     }

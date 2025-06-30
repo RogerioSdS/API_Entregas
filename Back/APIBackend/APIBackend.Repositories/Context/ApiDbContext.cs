@@ -93,12 +93,15 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
 
         modelBuilder.Entity<ClassDetails>(entity =>
         {
-            entity.HasKey(e => e.Id); 
+            entity.HasKey(e => e.Id);
 
             entity.HasOne(e => e.Student)
                   .WithMany(s => s.Classes)
                   .HasForeignKey(e => e.StudentId)
                   .OnDelete(DeleteBehavior.Cascade); 
+                  
+            entity.Property(c => c.DateOfClass)
+                  .HasColumnType("date");
         });
     }
 }

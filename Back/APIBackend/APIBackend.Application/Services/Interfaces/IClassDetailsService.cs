@@ -25,14 +25,14 @@ namespace APIBackend.Application.Services.Interfaces
         public Task<ClassDetailsDTO?> GetClassDetailsByIdAsync(int classId);
 
         /// <summary>
-        /// Busca uma aula pelo ID do aluno.
+        /// Busca as aulas associadas a um aluno pelo ID do aluno.
         /// </summary>
         /// <param name="studentId">ID do aluno.</param>
         /// <returns>
-        /// Retorna um objeto <see cref="ClassDetailsDTO"/> com os dados da aula associada ao aluno,
-        /// ou <see langword="null"/> se não encontrada.
+        /// Retorna uma lista de objetos <see cref="ClassDetailsDTO"/> com os dados das aulas associadas ao aluno,
+        /// ou uma lista vazia se não encontrada.
         /// </returns>
-        public Task<ClassDetailsDTO?> GetClassDetailsByStudentIdAsync(int studentId);
+        public Task<List<ClassDetailsDTO>?> GetClassesDetailsByStudentIdAsync(int studentId);
 
         /// <summary>
         /// Busca todas as aulas de um professor em um intervalo de datas.
@@ -52,7 +52,7 @@ namespace APIBackend.Application.Services.Interfaces
         /// <param name="classDetails">Objeto DTO contendo os dados atualizados da aula.</param>
         /// <returns>Retorna o <see cref="ClassDetailsDTO"/> com os dados atualizados.</returns>
         /// <exception cref="NullReferenceException">Lançada se a aula não for encontrada.</exception>
-        public Task<ClassDetailsDTO> UpdateClassDetailsAsync(ClassDetailsUpdateDTO classDetails);
+        public Task<ClassDetailsDTO?> UpdateClassDetailsAsync(ClassDetailsUpdateDTO classDetails);
 
         /// <summary>
         /// Exclui uma aula com base no ID fornecido.
@@ -61,5 +61,14 @@ namespace APIBackend.Application.Services.Interfaces
         /// <returns>Retorna <see langword="true"/> se a exclusão for bem-sucedida.</returns>
         /// <exception cref="NullReferenceException">Lançada se a aula não for encontrada.</exception>
         public Task<bool> DeleteClassDetailsAsync(int classId);
+
+        /// <summary>
+        /// Obtém um resumo financeiro das aulas de um aluno em um intervalo de datas.
+        /// </summary>
+        /// <param name="dateFrom">Data inicial do intervalo.</param>
+        /// <param name="dateTo">Data final do intervalo.</param>
+        /// <param name="studentId">ID do aluno (opcional).</param>
+        /// <returns>Retorna um objeto <see cref="ClassesSummaryDTO"/> contendo o resumo das aulas.</returns>
+        public Task<ClassesSummaryDTO> GetClassesSummaryAsync(string dateFrom, string dateTo, int? studentId);
     }
 }

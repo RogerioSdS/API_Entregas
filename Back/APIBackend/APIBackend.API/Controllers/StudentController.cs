@@ -33,7 +33,7 @@ namespace APIBackend.API.Controllers
                 var result = await _studentService.AddStudentAsync(model);
                 _loggerNLog.Info($"Usuário criado com sucesso: {result.FirstName} {result.LastName} - {result.Email}");
 
-                return Created("", new { result.FirstName, result.LastName, result.Email });
+                return Created("", new { result });
             }
             catch (Exception ex) when (ex is ArgumentNullException || ex is InvalidOperationException || ex is ArgumentException)
             {
@@ -140,6 +140,6 @@ namespace APIBackend.API.Controllers
 
                 return StatusCode(500, "Erro interno do servidor.");
             }
-        }
+        }        
     }
 }

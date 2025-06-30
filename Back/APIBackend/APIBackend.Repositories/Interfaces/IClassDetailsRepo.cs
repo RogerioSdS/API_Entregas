@@ -11,7 +11,7 @@ namespace APIBackend.Repositories.Interfaces
         /// <param name="classDetails">Entidade contendo os dados da aula a ser criada.</param>
         /// <returns>A aula criada.</returns>
         public Task<ClassDetails> AddClassDetailsAsync(ClassDetails classDetails);
-                
+
         /// <summary>
         /// Busca todas as aulas ordenadas por data.
         /// </summary>
@@ -30,7 +30,7 @@ namespace APIBackend.Repositories.Interfaces
         /// </summary>
         /// <param name="studentId">ID do aluno.</param>
         /// <returns>A aula associada ao aluno, ou <see langword="null"/> se não encontrada.</returns>
-        public Task<ClassDetails?> GetClassesDetailsStudentIdAsync(int studentId);
+        public Task<List<ClassDetails>?> GetClassesDetailsStudentIdAsync(int studentId);
 
         /// <summary>
         /// Atualiza os dados de uma aula existente.

@@ -107,23 +107,18 @@ public class UserService : IUserService
 
     public async Task<UserUpdateFromUserDTO> UpdateUserFromUserAsync(UserUpdateFromUserDTO userDTO)
     {
-        // Buscar o usuário existente do banco
         var userToUpdate = await _userRepository.GetUserByEmailAsync(userDTO.Email);
 
         if (userToUpdate == null)
             throw new ArgumentNullException(nameof(userToUpdate), "Usuário não encontrado");
 
-        // Atualizar apenas os campos permitidos do DTO no usuário existente
         _mapper.Map(userDTO, userToUpdate);
 
-        // Chamar o repositório para atualizar o usuário
         var updatedUser = await _userRepository.UpdateUserAsync(userToUpdate);
 
-        // Verificar se o usuário foi atualizado
         if (updatedUser == null)
             throw new Exception("Usuário não atualizado");
 
-        // Retornar o DTO mapeado do usuário atualizado
         return _mapper.Map<UserUpdateFromUserDTO>(updatedUser);
     }    
 

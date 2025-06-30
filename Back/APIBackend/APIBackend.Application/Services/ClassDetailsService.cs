@@ -11,23 +11,21 @@ namespace APIBackend.Application.Services;
 public class ClassDetailsService : IClassDetailsService
 {
     private readonly IClassDetailsRepo _classDetailsRepo;
+    private readonly IStudentRepo _studentRepo;
+
     protected Logger _loggerNLog = LogManager.GetCurrentClassLogger();
     private readonly IMapper _mapper;
 
-    public ClassDetailsService(IClassDetailsRepo classDetailsRepo, IMapper mapper)
+    public ClassDetailsService(IClassDetailsRepo classDetailsRepo, IStudentRepo studentRepo, IMapper mapper)
     {
         _mapper = mapper;
         _classDetailsRepo = classDetailsRepo;
+        _studentRepo = studentRepo;
     }
 
     public async Task<ClassDetailsDTO> AddClassDetailsAsync(ClassDetailsDTO classDetailsDTO)
     {
         var classDetails = _mapper.Map<ClassDetails>(classDetailsDTO);
-
-        if (classDetails.DateOfClass == default)
-        {
-            classDetails.DateOfClass = DateTime.Now;
-        }
 
         try
         {
@@ -53,16 +51,31 @@ public class ClassDetailsService : IClassDetailsService
         return classDetailsDTO;
     }
 
-    public async Task<ClassDetailsDTO?> GetClassDetailsByStudentIdAsync(int studentId)
+    public async Task<List<ClassDetailsDTO>?> GetClassesDetailsByStudentIdAsync(int studentId)
     {
-        var classDetails = await _classDetailsRepo.GetClassesDetailsStudentIdAsync(studentId);
-        if (classDetails == null)
+        var studentFound = await _studentRepo.GetStudentByIdAsync(studentId);
+        if (studentFound == null)
         {
-            throw new NullReferenceException("Aula não encontrada para o estudante com ID: " + studentId); 
+            throw new NullReferenceException("Estudante não encontrado com ID: " + studentId);
         }
 
-        var classDetailsDTO = _mapper.Map<ClassDetailsDTO>(classDetails);
-        return classDetailsDTO;
+        var classDetails = await _classDetailsRepo.GetClassesDetailsStudentIdAsync(studentId);
+        
+        if (classDetails.Count == 0)
+        {
+            throw new NullReferenceException("Aula não encontrada para o estudante com ID: " + studentId);
+        }
+
+        try
+        {
+            var classDetailsDTO = _mapper.Map<List<ClassDetailsDTO>>(classDetails);
+            return classDetailsDTO;
+        }
+        catch (System.Exception ex)
+        {
+            _loggerNLog.Error($"Erro ao mapear detalhes da aula: {ex.Message}");            
+            throw new InvalidOperationException("Erro ao mapear detalhes da aula.", ex);
+        }
     }
 
     public async Task<IEnumerable<ClassDetailsDTO>?> GetAllClassesDetailsByDateAsync(string? dateFrom, string? dateTo, int? studentId = null)
@@ -73,17 +86,12 @@ public class ClassDetailsService : IClassDetailsService
         
     }
     
-    public async Task<ClassDetailsDTO> UpdateClassDetailsAsync(ClassDetailsUpdateDTO classDetailsDTO)
+    public async Task<ClassDetailsDTO?> UpdateClassDetailsAsync(ClassDetailsUpdateDTO classDetailsDTO)
     {
-        var classDetails = _mapper.Map<ClassDetails>(classDetailsDTO);
-        var classDetailsToUpdate = await _classDetailsRepo.GetClassDetailsByIdAsync(classDetails.Id);
-        if (classDetailsToUpdate == null)
-        {
-            throw new NullReferenceException("Aula não encontrada.");
-        }
+        var classDetails = _mapper.Map<ClassDetails>(classDetailsDTO);        
 
-        await _classDetailsRepo.UpdateClassDetailsAsync(classDetailsToUpdate);
-        return _mapper.Map<ClassDetailsDTO>(classDetailsToUpdate);
+        await _classDetailsRepo.UpdateClassDetailsAsync(classDetails);
+        return _mapper.Map<ClassDetailsDTO>(classDetails);
     }
 
     public async Task<bool> DeleteClassDetailsAsync(int classId)
@@ -97,5 +105,33 @@ public class ClassDetailsService : IClassDetailsService
         await _classDetailsRepo.DeleteClassDetailsAsync(classId);
         
         return true;
+    }
+
+    public async Task<ClassesSummaryDTO> GetClassesSummaryAsync(string dateFrom, string dateTo, int? studentId)
+    {
+        var classesFound = await _classDetailsRepo.GetAllClassesByDateAsync(dateFrom, dateTo, studentId);
+        
+        if (classesFound == null || !classesFound.Any())
+        {
+            throw new NullReferenceException("Nenhuma aula encontrada no intervalo de datas especificado.");
+        }
+
+        var studentFound = await _studentRepo.GetStudentByIdAsync(studentId);
+
+        if (studentFound == null)
+        {
+            throw new NullReferenceException("Estudante não encontrado com ID: " + studentId);
+        }
+
+        var classValue = studentFound.PriceClasses ?? throw new NullReferenceException("Valor das aulas não definido para o estudante com ID: " + studentId);
+
+        var totalHours = classesFound.Sum(c => c.QuantityHourClass);
+        var totalValue = classesFound.Sum(c => c.QuantityHourClass * classValue);
+
+        return new ClassesSummaryDTO
+        {
+            TotalHoursClasses = totalHours,
+            TotalValue = totalValue
+        };
     }
 }

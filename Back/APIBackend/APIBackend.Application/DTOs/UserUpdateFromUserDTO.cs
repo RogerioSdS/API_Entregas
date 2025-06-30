@@ -8,7 +8,6 @@ namespace APIBackend.Application.DTOs
 {
     public class UserUpdateFromUserDTO
     {
-        public int Id { get; set; }
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email format. The email must include a valid domain.")]
         public required string Email { get; set; }
         [DataType(DataType.Password)]

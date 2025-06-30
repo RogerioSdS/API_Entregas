@@ -17,6 +17,16 @@ public class ClassDetailsRepoService : IClassDetailsRepo
 
     public async Task<ClassDetails> AddClassDetailsAsync(ClassDetails classDetails)
     {
+        
+        if (classDetails.DateOfClass == default)
+        {
+            classDetails.DateOfClass = DateTime.Today; // <- Garante 00:00:00
+        }
+        else
+        {
+            classDetails.DateOfClass = classDetails.DateOfClass.Date; // <- Remove hora, se veio do JSON com hora
+        }
+        
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -66,10 +76,10 @@ public class ClassDetailsRepoService : IClassDetailsRepo
         return await query.ToListAsync();
     }
 
-    public async Task<ClassDetails?> GetClassesDetailsStudentIdAsync(int studentId)    
+    public async Task<List<ClassDetails>?> GetClassesDetailsStudentIdAsync(int studentId)    
     {
         return await _context.ClassDetails
-            .FirstOrDefaultAsync(cd => cd.StudentId == studentId);
+            .Where(cd => cd.StudentId == studentId).ToListAsync();
     }
 
     public async Task<ClassDetails?> GetClassDetailsByIdAsync(int classId)
@@ -95,6 +105,7 @@ public class ClassDetailsRepoService : IClassDetailsRepo
             classFound.StudentId = classDetails.StudentId;
             classFound.DtModified = DateTime.Now;
             _context.ClassDetails.Update(classFound);
+
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -125,6 +136,11 @@ public class ClassDetailsRepoService : IClassDetailsRepo
             await transaction.CommitAsync();
 
             return true;
+        }
+        catch (NullReferenceException)
+        {
+            await transaction.RollbackAsync();
+            throw new NullReferenceException("Aula não encontrada.");
         }
         catch
         {
