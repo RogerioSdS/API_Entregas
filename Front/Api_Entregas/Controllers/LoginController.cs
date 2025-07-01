@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Api_Entregas.ViewModels;
-using System.Threading.Tasks;
-using System.Net.Http;
 using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
-using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace Api_Entregas.Controllers
@@ -39,8 +35,9 @@ namespace Api_Entregas.Controllers
             {
                 try
                 {
-                    string apiUrl = _configuration["ApiBackendSettings:AuthUrl"] ?? string.Empty;
-                    string jsonBody = JsonConvert.SerializeObject(model); 
+                    var loginPath = "/login";
+                    string apiUrl = _configuration["ApiBackendSettings:AuthUrl"] + loginPath ?? string.Empty;
+                    string jsonBody = JsonConvert.SerializeObject(model);
                     var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
                     _logger.LogInformation($"Fazendo requisição para {apiUrl + jsonBody}");
 
@@ -101,7 +98,8 @@ namespace Api_Entregas.Controllers
             {
                 try
                 {
-                    string apiUrl = _configuration["ApiBackendSettings:AuthUrl"] ?? string.Empty;
+                    var userPath = "/createUser";
+                    string apiUrl = _configuration["ApiBackendSettings:UserUrl"] + userPath ?? string.Empty;
                     string jsonBody = JsonConvert.SerializeObject(model);
                     var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
                     _logger.LogInformation($"Fazendo requisição para {apiUrl + jsonBody}");

@@ -11,73 +11,56 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Api_Entregas</title>
+
     <!-- CSS do Toastr -->
     <link rel="stylesheet" href="~/css/toastr.min.css" asp-append-version="true" />
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css" />
     <!-- Font Awesome CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <!-- CSS Personalizado -->
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <!-- CSS para ajustar a posição do Toastr -->
+
     <style>
-        #toast-container {
-            position: fixed;
-            bottom: 10px; /* Ajuste a distância do fundo */
-            width: 100%;
-            text-align: center;
-        }
-        #toast-container .toast {
-            display: inline-block;
-            margin: 0 auto;
-        }
+       
     </style>
 </head>
 <body>
-    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header border-bottom-0">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-title text-center">
-                        <h4>Login</h4>
-                    </div>
-                    <div class="d-flex flex-column text-center">
+            <div class="modal-content border-0 bg-transparent">
+                <div class="modal-body p-0">
+                    <div class="card-login">
                         <form asp-action="Login" method="post">
                             <div class="form-group">
-                                <input type="email" class="form-control" id="email1" name="Email" placeholder="Your email address..." required>
+                                <input asp-for="Email" class="form-control" placeholder="Email ID" />
                                 <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
+
                             <div class="form-group">
-                                <input type="password" class="form-control" id="password1" name="Password" placeholder="Your password..." required>
+                                <input asp-for="Password" class="form-control" placeholder="Password" type="password" />
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
-                            <!-- Campo escondido para actionDemanded -->
+
                             <input type="hidden" name="actionDemanded" value="@ViewBag.ActionDemanded" />
-                            <button type="submit" class="btn btn-info btn-block btn-round">Login</button>
+
+                            <div class="form-group d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="rememberMe" />
+                                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                                </div>
+                                <a href="#">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="btn btn-login">LOGIN</button>
                         </form>
-                        <div class="text-center text-muted delimiter">or use a social network</div>
-                        <div class="d-flex justify-content-center social-buttons">
-                            <button type="button" class="btn btn-secondary btn-round" data-toggle="tooltip" data-placement="top" title="Twitter">
-                                <i class="fab fa-twitter"></i>
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-round" data-toggle="tooltip" data-placement="top" title="Facebook">
-                                <i class="fab fa-facebook"></i>
-                            </button>
-                            <button type="button" class="btn btn-secondary btn-round" data-toggle="tooltip" data-placement="top" title="Linkedin">
-                                <i class="fab fa-linkedin"></i>
-                            </button>
+
+                        <div class="text-center mt-3">
+                            <small class="text-muted">Ainda não tem cadastro?
+                                <a class="text-info" asp-controller="Login" asp-action="Register">Inscreva-se</a>
+                            </small>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer d-flex justify-content-center">
-                    <div class="signup-section"><A>Ainda não tem cadastro</A>?<a class="text-info" asp-area="" asp-controller="Login"
-                                asp-action="Register"> Inscreva-se </a>
+
                 </div>
             </div>
         </div>
@@ -92,22 +75,19 @@
 
     <script>
         $(document).ready(function () {
-            // Configuração do Toastr
             toastr.options = {
                 "closeButton": true,
-                "positionClass": "toast-bottom-center", // Posiciona abaixo do formulário
+                "positionClass": "toast-bottom-center",
                 "progressBar": true,
                 "timeOut": "5000",
                 "preventDuplicates": true
             };
 
-            // Exibir mensagens do TempData (sucesso)
             @if (TempData["SuccessMessage"] != null)
             {
                 <text>toastr.success('@TempData["SuccessMessage"]');</text>
             }
 
-            // Exibir erros do ModelState
             @if (!ViewData.ModelState.IsValid)
             {
                 foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
@@ -116,33 +96,7 @@
                 }
             }
 
-            // Mostrar o modal automaticamente
             $('#loginModal').modal('show');
-
-            // Alterar imagem de fundo ao exibir o modal
-            $('#loginModal').on('shown.bs.modal', function () {
-                $('body').css({
-                    'background-image': 'url("/images/imagemFundoLogin.jpg")',
-                    'background-size': '100% 100%',
-                    'background-position': 'center',
-                    'background-repeat': 'no-repeat',
-                    'height': '100vh',
-                    'margin': '0'
-                });
-            });
-
-            // Restaurar imagem de fundo ao fechar o modal
-            $('#loginModal').on('hidden.bs.modal', function () {
-                $('body').css({
-                    'background-image': 'url("https://via.placeholder.com/1920x1080")',
-                    'background-size': 'cover',
-                    'background-position': 'center',
-                    'background-repeat': 'no-repeat'
-                });
-            });
-
-            // Inicializar tooltips
-            $('[data-toggle="tooltip"]').tooltip();
         });
     </script>
 </body>
