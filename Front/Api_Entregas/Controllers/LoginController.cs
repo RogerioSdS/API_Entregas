@@ -66,8 +66,7 @@ namespace Api_Entregas.Controllers
 
                     }
                     else
-                    {
-                        // Logar o código de status e a resposta para depuração
+                    {                        
                         var errorContent = await response.Content.ReadAsStringAsync();
                         //CRIAR PAGINA PARA INFORMAR QUE HOUVE ERRO NO LOGIN
                         _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}, Resposta: {errorContent}");
@@ -87,6 +86,55 @@ namespace Api_Entregas.Controllers
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
             _logger.LogWarning($"Erros de validação no ModelState: {string.Join(", ", errors)}");
             return View("Login", model);
+        }
+
+        [HttpGet("Register")]
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost("Register")]
+        public async Task<IActionResult> Register(RegisterViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    string apiUrl = _configuration["ApiBackendSettings:AuthUrl"] ?? string.Empty;
+                    string jsonBody = JsonConvert.SerializeObject(model);
+                    var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
+                    _logger.LogInformation($"Fazendo requisição para {apiUrl + jsonBody}");
+
+                    // Fazer a requisição Post para a API de usuários
+                    var response = await _httpClient.PostAsync(apiUrl, content);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+                        var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
+                        //userData.Email = model.Email;
+                        _logger.LogInformation($"Resposta da API: {responseContent}");
+                        // Armazenar como JSON na sessão
+                        HttpContext.Session.SetString("UserData", JsonConvert.SerializeObject(userData));
+                        _logger.LogInformation("Redirecionando para SignIn após registro bem-sucedido.");
+                        return RedirectToAction("SignIn");
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}, Resposta: {errorContent}");
+                        ModelState.AddModelError("", "Erro ao registrar usuário.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Erro ao registrar o usuário.");
+                    ModelState.AddModelError("", "Ocorreu um erro ao processar o registro. Tente novamente.");
+                }
+            }
+
+            return View(model);
         }
 
         [HttpGet("SignIn")]

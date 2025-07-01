@@ -6,25 +6,35 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Api_Entregas</title>
-
+    <!-- CSS do Toastr -->
+    <link rel="stylesheet" href="~/css/toastr.min.css" asp-append-version="true" />
     <!-- Bootstrap CSS -->
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css'>
-    <!-- Font Awesome CSS (para ícones sociais) -->
-    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'>
-    <!-- CSS Personalizado do Login -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css" />
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <!-- CSS Personalizado -->
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
-    <!-- CSS padrão do projeto -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <!-- CSS para ajustar a posição do Toastr -->
+    <style>
+        #toast-container {
+            position: fixed;
+            bottom: 10px; /* Ajuste a distância do fundo */
+            width: 100%;
+            text-align: center;
+        }
+        #toast-container .toast {
+            display: inline-block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
-
 <body>
-
     <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -47,14 +57,10 @@
                                 <input type="password" class="form-control" id="password1" name="Password" placeholder="Your password..." required>
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
-
-                            <!-- Campo escondido para levar o actionDemanded para o POST -->
+                            <!-- Campo escondido para actionDemanded -->
                             <input type="hidden" name="actionDemanded" value="@ViewBag.ActionDemanded" />
-                            
                             <button type="submit" class="btn btn-info btn-block btn-round">Login</button>
-                            
                         </form>
-                        
                         <div class="text-center text-muted delimiter">or use a social network</div>
                         <div class="d-flex justify-content-center social-buttons">
                             <button type="button" class="btn btn-secondary btn-round" data-toggle="tooltip" data-placement="top" title="Twitter">
@@ -70,50 +76,74 @@
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-center">
-                    <div class="signup-section">Not a member yet? <a href="#a" class="text-info"> Sign Up</a>.</div>
+                    <div class="signup-section"><A>Ainda não tem cadastro</A>?<a class="text-info" asp-area="" asp-controller="Login"
+                                asp-action="Register"> Inscreva-se </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- jQuery -->
-    <script src='https://code.jquery.com/jquery-3.3.1.slim.min.js'></script>
-    <!-- Popper JS -->
-    <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js'></script>
-    <!-- Bootstrap JS -->
-    <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js'></script>
-    <!-- JavaScript Personalizado -->
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="~/js/toastr.min.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
     <script>
         $(document).ready(function () {
-            $('#loginModal').modal('show'); // Mostra o modal automaticamente ao carregar
+            // Configuração do Toastr
+            toastr.options = {
+                "closeButton": true,
+                "positionClass": "toast-bottom-center", // Posiciona abaixo do formulário
+                "progressBar": true,
+                "timeOut": "5000",
+                "preventDuplicates": true
+            };
 
-            // Quando o modal for exibido, altera a imagem de fundo
+            // Exibir mensagens do TempData (sucesso)
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>toastr.success('@TempData["SuccessMessage"]');</text>
+            }
+
+            // Exibir erros do ModelState
+            @if (!ViewData.ModelState.IsValid)
+            {
+                foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <text>toastr.error('@error.ErrorMessage');</text>
+                }
+            }
+
+            // Mostrar o modal automaticamente
+            $('#loginModal').modal('show');
+
+            // Alterar imagem de fundo ao exibir o modal
             $('#loginModal').on('shown.bs.modal', function () {
-                // Definir a imagem de fundo para o corpo da página
-                $('body').css('background-image', 'url("/images/imagemFundoLogin.jpg")');
-                $('body').css('background-size', '100% 100%');  // Ajusta para preencher completamente a tela
-                $('body').css('background-position', 'center');
-                $('body').css('background-repeat', 'no-repeat');
-                $('body').css('height', '100vh');  // A altura do corpo será 100% da altura da tela
-                $('body').css('margin', '0');  // Remove qualquer margem
+                $('body').css({
+                    'background-image': 'url("/images/imagemFundoLogin.jpg")',
+                    'background-size': '100% 100%',
+                    'background-position': 'center',
+                    'background-repeat': 'no-repeat',
+                    'height': '100vh',
+                    'margin': '0'
+                });
             });
 
-
-            // Quando o modal for fechado, restaura a imagem de fundo original (opcional)
+            // Restaurar imagem de fundo ao fechar o modal
             $('#loginModal').on('hidden.bs.modal', function () {
-                $('body').css('background-image', 'url("https://via.placeholder.com/1920x1080")'); // Substitua por sua imagem inicial
-                $('body').css('background-size', 'cover');
-                $('body').css('background-position', 'center');
-                $('body').css('background-repeat', 'no-repeat');
+                $('body').css({
+                    'background-image': 'url("https://via.placeholder.com/1920x1080")',
+                    'background-size': 'cover',
+                    'background-position': 'center',
+                    'background-repeat': 'no-repeat'
+                });
             });
 
-            // Inicializa os tooltips
+            // Inicializar tooltips
             $('[data-toggle="tooltip"]').tooltip();
         });
     </script>
-
-    <!-- Scripts padrão do seu projeto -->
-    <script src="~/js/site.js" asp-append-version="true"></script>
 </body>
-
 </html>

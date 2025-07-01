@@ -17,16 +17,16 @@ public class ClassDetailsRepoService : IClassDetailsRepo
 
     public async Task<ClassDetails> AddClassDetailsAsync(ClassDetails classDetails)
     {
-        
+
         if (classDetails.DateOfClass == default)
         {
-            classDetails.DateOfClass = DateTime.Today; // <- Garante 00:00:00
+            classDetails.DateOfClass = DateTime.Today; 
         }
         else
         {
-            classDetails.DateOfClass = classDetails.DateOfClass.Date; // <- Remove hora, se veio do JSON com hora
+            classDetails.DateOfClass = classDetails.DateOfClass.Date;
         }
-        
+
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -37,19 +37,19 @@ public class ClassDetailsRepoService : IClassDetailsRepo
 
             return classDetails;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
-             var errorMessage = ex.InnerException != null
-                ? $"Erro interno: {ex.InnerException.Message}"
-                : ex.Message;
+            var errorMessage = ex.InnerException != null
+               ? $"Erro interno: {ex.InnerException.Message}"
+               : ex.Message;
 
             throw new InvalidOperationException("Erro ao adicionar o estudante. " + errorMessage, ex);
-        }        
+        }
     }
 
     public async Task<IEnumerable<ClassDetails>> GetAllClassesByDateAsync(string? dateFrom, string? dateTo, int? studentId = null)
-    {         
+    {
         var query = _context.ClassDetails.AsQueryable();
 
         if (!string.IsNullOrEmpty(dateFrom))
@@ -76,7 +76,7 @@ public class ClassDetailsRepoService : IClassDetailsRepo
         return await query.ToListAsync();
     }
 
-    public async Task<List<ClassDetails>?> GetClassesDetailsStudentIdAsync(int studentId)    
+    public async Task<List<ClassDetails>?> GetClassesDetailsStudentIdAsync(int studentId)
     {
         return await _context.ClassDetails
             .Where(cd => cd.StudentId == studentId).ToListAsync();
@@ -97,7 +97,7 @@ public class ClassDetailsRepoService : IClassDetailsRepo
             if (classFound == null)
             {
                 throw new NullReferenceException("Aula não encontrada.");
-            }            
+            }
 
             classFound.ClassType = classDetails.ClassType;
             classFound.DateOfClass = classDetails.DateOfClass;
@@ -105,7 +105,6 @@ public class ClassDetailsRepoService : IClassDetailsRepo
             classFound.StudentId = classDetails.StudentId;
             classFound.DtModified = DateTime.Now;
             _context.ClassDetails.Update(classFound);
-
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
@@ -115,8 +114,7 @@ public class ClassDetailsRepoService : IClassDetailsRepo
         {
             await transaction.RollbackAsync();
             throw new InvalidOperationException("Erro ao atualizar aula.");
-        }    
-        
+        }
     }
 
     public async Task<bool> DeleteClassDetailsAsync(int classId)

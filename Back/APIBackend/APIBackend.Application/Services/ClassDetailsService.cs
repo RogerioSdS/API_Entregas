@@ -61,7 +61,7 @@ public class ClassDetailsService : IClassDetailsService
 
         var classDetails = await _classDetailsRepo.GetClassesDetailsStudentIdAsync(studentId);
         
-        if (classDetails.Count == 0)
+        if (classDetails.Count == 0 || classDetails == null)
         {
             throw new NullReferenceException("Aula não encontrada para o estudante com ID: " + studentId);
         }
