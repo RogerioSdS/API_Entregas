@@ -5,26 +5,11 @@
     ViewData["Title"] = "Login Page";
 }
 
-<!DOCTYPE html>
-<html lang="br">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Api_Entregas</title>
-
-    <!-- CSS do Toastr -->
-    <link rel="stylesheet" href="~/css/toastr.min.css" asp-append-version="true" />
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css" />
-    <!-- Font Awesome CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+@section Styles {
     <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+}
 
-    <style>
-       
-    </style>
-</head>
-<body>
+<body class="login-page">
     <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content border-0 bg-transparent">
@@ -48,7 +33,7 @@
                                     <input type="checkbox" class="form-check-input" id="rememberMe" />
                                     <label class="form-check-label" for="rememberMe">Remember me</label>
                                 </div>
-                                <a href="#">Forgot Password?</a>
+                                <a class="text-info" asp-controller="Login" asp-action="ForgotPassword">Esqueceu a senha?</a>
                             </div>
 
                             <button type="submit" class="btn btn-login">LOGIN</button>
@@ -60,7 +45,6 @@
                             </small>
                         </div>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -76,11 +60,11 @@
     <script>
         $(document).ready(function () {
             toastr.options = {
-                "closeButton": true,
-                "positionClass": "toast-bottom-center",
-                "progressBar": true,
-                "timeOut": "5000",
-                "preventDuplicates": true
+                closeButton: true,
+                positionClass: "toast-bottom-center",
+                progressBar: true,
+                timeOut: "5000",
+                preventDuplicates: true
             };
 
             @if (TempData["SuccessMessage"] != null)
@@ -100,4 +84,3 @@
         });
     </script>
 </body>
-</html>

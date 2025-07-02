@@ -5,83 +5,77 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Api_Entregas</title>
-    <script type="importmap"></script>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Api_Entregas.styles.css" asp-append-version="true" />
+    <link rel="icon" href="~/images/favicon.ico" type="image/x-icon" asp-append-version="true" />
+
     <!-- CSS do Toastr -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
     <!-- jQuery (necessário para o Toastr) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- JavaScript do Toastr -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    @RenderSection("Styles", required: false)
 </head>
 
 <body>
-    @* Busca a string session do usuário logado *@
     @{
         var userDataJson = Context.Session.GetString("UserData");
     }
 
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Api_Entregas <br> Beta
-                    Version</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">Api_Entregas <br> Beta Version</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Login"
-                                asp-action="Login">Login</a>
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home"
-                                asp-action="Privacy">Privacy</a>
-                        </li>
-
-                        @{
-                            if (!string.IsNullOrEmpty(userDataJson))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard"
-                                        asp-action="Dashboard">Financeiro</a>
-                                </li>
-                            }
+                        @if (!string.IsNullOrEmpty(userDataJson))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Dashboard">Financeiro</a>
+                            </li>
                         }
-
                     </ul>
+
+                    <div class="navbar-nav justify-content-end">
+                        <a class="btn btn-login d-block mx-2" asp-controller="Login" asp-action="Login">Login</a>
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-
-        <div class="container">
-            <main role="main" class="pb-3">
-                @RenderBody()
-            </main>
-        </div>
+    
+    <main role="main" class="pb-3">
+        @RenderBody()
+    </main>
    
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - Api_Entregas - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer">
+        <div class="container text-center">
+            <img src="~/images/pedagogisa_sem_fundo.png" alt="Logo Rodapé" class="logo-bottom" />
+            <div>&copy; 2025 - Api_Entregas - <a asp-controller="Home" asp-action="Privacy">Privacy</a></div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
     @await RenderSectionAsync("Scripts", required: false)
-
-    <img src="~/images/pedagogisa_sem_fundo.png" alt="Logo Rodapé" class="logo-bottom">
-
 </body>
 
 </html>
