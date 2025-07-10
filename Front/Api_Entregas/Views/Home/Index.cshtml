@@ -1,8 +1,22 @@
-﻿@{
+﻿@using Newtonsoft.Json
+
+@{
     ViewData["Title"] = "Home Page";
 }
 
+@{
+        var userDataJson = Context.Session.GetString("UserData");
+   }
+
 <div class="text-center">
-    <h1>Bem-vindo ao MVC com Web API</h1>
+        @{
+            if (!string.IsNullOrEmpty(userDataJson))
+            {                
+                var userData = JsonConvert.DeserializeObject<UserViewModel>(userDataJson);
+                    <h1>Bem-vindo @userData.FirstName</h1>
+
+            }
+        }
+
     <p>A API pode ser acessada em <code>/api/usuarios</code>.</p>
 </div>

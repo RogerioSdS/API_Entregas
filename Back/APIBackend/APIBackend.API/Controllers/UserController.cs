@@ -141,7 +141,7 @@ namespace APIBackend.API.Controllers
                 }
 
                 return Ok(user);
-            }
+            }   
             catch (ArgumentNullException ex)
             {
                 return BadRequest($"Erro ao buscar usuário, email inválido: {email}");

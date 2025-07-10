@@ -30,8 +30,6 @@
   <!-- Author: FormBold Team -->
   <!-- Learn More: https://formbold.com -->
   <div class="formbold-form-wrapper">
-    
-    <img src="your-image-url-here.jpg">
 
    <form asp-action="Register" method="post">
       <div class="formbold-form-title">
@@ -123,18 +121,6 @@
           />
         </div>
         <div>
-          <label for="country" class="formbold-form-label"> País </label>
-          <input
-            type="text"
-            name="country"
-            id="country"
-            class="formbold-form-input"
-          />
-        </div>
-      </div>
-
-      <div class="formbold-input-flex">
-        <div>
           <label for="post" class="formbold-form-label"> CEP </label>
           <input
             type="text"
@@ -142,7 +128,9 @@
             id="post"
             class="formbold-form-input"
           />
-        </div>
+        </div>       
+      </div>
+      <div class="formbold-input-flex">
         <div>
           <label for="area" class="formbold-form-label"> Telefone </label>
           <input
@@ -162,7 +150,7 @@
             id="password"
             class="formbold-form-input"
 
-            <label for="confirmPassword" class="formbold-form-label">Confirme a senha</label>
+            <label for="confirmPassword" class="formbold-form-label"> Confirme a senha </label>
           <input
             type="password"
             name="confirmPassword"
@@ -171,34 +159,8 @@
           />
           </div>
 
-      <div class="formbold-checkbox-wrapper">
-        <label for="supportCheckbox" class="formbold-checkbox-label">
-          <div class="formbold-relative">
-            <input
-              type="checkbox"
-              id="supportCheckbox"
-              class="formbold-input-checkbox"
-            />
-            <div class="formbold-checkbox-inner">
-              <span class="formbold-opacity-0">
-                <svg
-                  width="11"
-                  height="8"
-                  viewBox="0 0 11 8"
-                  fill="none"
-                  class="formbold-stroke-current"
-                >
-                  
-                </svg>
-              </span>
-            </div>
-          </div>
-          I agree to the defined
-          <a href="#"> terms, conditions, and policies</a>
-        </label>
-      </div>
+    <button type="submit" class="formbold-btn">Registrar agora</button>
 
-      <button class="formbold-btn">Register Now</button>
     </form>
   </div>
 </div>
@@ -214,59 +176,20 @@
     <script src="~/js/toastr.min.js" asp-append-version="true"></script>
     
     <script>
-        $(document).ready(function () {
-            // Configuração do Toastr
-            toastr.options = {
-                "closeButton": true,
-                "positionClass": "toast-bottom-center", // Posiciona abaixo do formulário
-                "progressBar": true,
-                "timeOut": "5000",
-                "preventDuplicates": true
-            };
+        // Exibir mensagens do TempData (sucesso)
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>toastr.success('@TempData["SuccessMessage"]');</text>
+        }
 
-            // Exibir mensagens do TempData (sucesso)
-            @if (TempData["SuccessMessage"] != null)
+        // Exibir erros do ModelState
+        @if (!ViewData.ModelState.IsValid)
+        {
+            foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
             {
-                <text>toastr.success('@TempData["SuccessMessage"]');</text>
+                <text>toastr.error('@error.ErrorMessage');</text>
             }
-
-            // Exibir erros do ModelState
-            @if (!ViewData.ModelState.IsValid)
-            {
-                foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <text>toastr.error('@error.ErrorMessage');</text>
-                }
-            }
-
-            // Mostrar o modal automaticamente
-            $('#loginModal').modal('show');
-
-            // Alterar imagem de fundo ao exibir o modal
-            $('#loginModal').on('shown.bs.modal', function () {
-                $('body').css({
-                    'background-image': 'url("/images/imagemFundoLogin.jpg")',
-                    'background-size': '100% 100%',
-                    'background-position': 'center',
-                    'background-repeat': 'no-repeat',
-                    'height': '100vh',
-                    'margin': '0'
-                });
-            });
-
-            // Restaurar imagem de fundo ao fechar o modal
-            $('#loginModal').on('hidden.bs.modal', function () {
-                $('body').css({
-                    'background-image': 'url("https://via.placeholder.com/1920x1080")',
-                    'background-size': 'cover',
-                    'background-position': 'center',
-                    'background-repeat': 'no-repeat'
-                });
-            });
-
-            // Inicializar tooltips
-            $('[data-toggle="tooltip"]').tooltip();
-        });
+        }
     </script>
 </body>
 </html>

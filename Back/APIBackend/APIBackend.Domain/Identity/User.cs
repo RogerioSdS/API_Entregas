@@ -15,6 +15,9 @@ public class User : IdentityUser<int>
     public required string FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Address { get; set; }
+    public string? FoneNumber { get; set; }
+    public DateTime Created {get; set; } = DateTime.Now;
+    public DateTime Modified {get; set; } = DateTime.Now;    
     public string? Complement { get; set; }
     public string ZipCode { get; set; } = string.Empty;
     public string? City { get; set; }

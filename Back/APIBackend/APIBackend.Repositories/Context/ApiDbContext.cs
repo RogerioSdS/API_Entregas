@@ -23,33 +23,44 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
         base.OnModelCreating(modelBuilder);
 
         // Configurações para User
-        modelBuilder.Entity<User>().Property(u => u.Email).IsRequired();
-        modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
-        modelBuilder.Entity<User>().Property(u => u.FirstName).HasMaxLength(50);
-        modelBuilder.Entity<User>().Property(u => u.LastName).HasMaxLength(50);
+        modelBuilder.Entity<User>(
+            entity =>
+            {
+
+                entity.Property(c => c.Created)
+                      .HasColumnType("date");
+
+                entity.Property(c => c.Modified)
+                      .HasColumnType("date");
+
+                entity.Property(u => u.Email).IsRequired();
+                entity.HasIndex(u => u.Email).IsUnique();
+                entity.Property(u => u.FirstName).HasMaxLength(50);
+                entity.Property(u => u.LastName).HasMaxLength(50);
+            });
 
         // Configurar o relacionamento muitos-para-muitos entre User e Role usando UserRole
         modelBuilder.Entity<UserRole>(entity =>
-        {
-            // Chave primária composta
-            entity.HasKey(ur => new { ur.UserId, ur.RoleId });
+{
+    // Chave primária composta
+    entity.HasKey(ur => new { ur.UserId, ur.RoleId });
 
-            // Relacionamento com User (sem propriedade de navegação)
-            entity.HasOne<User>()
-                  .WithMany(u => u.UserRoles)
-                  .HasForeignKey(ur => ur.UserId)
-                  .OnDelete(DeleteBehavior.Cascade);
+    // Relacionamento com User (sem propriedade de navegação)
+    entity.HasOne<User>()
+          .WithMany(u => u.UserRoles)
+          .HasForeignKey(ur => ur.UserId)
+          .OnDelete(DeleteBehavior.Cascade);
 
-            // Relacionamento com Role (sem propriedade de navegação)
-            entity.HasOne<Role>()
-                  .WithMany()
-                  .HasForeignKey(ur => ur.RoleId)
-                  .OnDelete(DeleteBehavior.Cascade);
+    // Relacionamento com Role (sem propriedade de navegação)
+    entity.HasOne<Role>()
+          .WithMany()
+          .HasForeignKey(ur => ur.RoleId)
+          .OnDelete(DeleteBehavior.Cascade);
 
-            // Configurar AssignmentDate com valor padrão dinâmico
-            entity.Property(ur => ur.AssignmentDate)
-                  .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')"); // SQL Server, ou NOW() para outros bancos
-        });
+    // Configurar AssignmentDate com valor padrão dinâmico
+    entity.Property(ur => ur.AssignmentDate)
+          .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')"); // SQL Server, ou NOW() para outros bancos
+});
 
         // Configurações para Role
         modelBuilder.Entity<Role>(
@@ -75,21 +86,21 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
                     .HasDefaultValueSql("STRFTIME('%Y-%m-%d %H:%M:%S', 'now')");
             });
 
-              modelBuilder.Entity<Student>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).ValueGeneratedOnAdd(); // 👈 gera o Id automaticamente
+        modelBuilder.Entity<Student>(entity =>
+  {
+      entity.HasKey(e => e.Id);
+      entity.Property(e => e.Id).ValueGeneratedOnAdd(); // 👈 gera o Id automaticamente
 
-            entity.Property(e => e.FirstName).IsRequired();
-            entity.Property(e => e.LastName).IsRequired();
-            entity.Property(e => e.Email).IsRequired();
-            entity.Property(e => e.PhoneNumber).IsRequired();
+      entity.Property(e => e.FirstName).IsRequired();
+      entity.Property(e => e.LastName).IsRequired();
+      entity.Property(e => e.Email).IsRequired();
+      entity.Property(e => e.PhoneNumber).IsRequired();
 
-            entity.HasOne(e => e.Responsible)
-                  .WithMany(u => u.Students)
-                  .HasForeignKey(e => e.ResponsibleId)
-                  .OnDelete(DeleteBehavior.Restrict);
-        });
+      entity.HasOne(e => e.Responsible)
+            .WithMany(u => u.Students)
+            .HasForeignKey(e => e.ResponsibleId)
+            .OnDelete(DeleteBehavior.Restrict);
+  });
 
         modelBuilder.Entity<ClassDetails>(entity =>
         {
@@ -98,8 +109,8 @@ public class ApiDbContext : IdentityDbContext<User, Role, int,
             entity.HasOne(e => e.Student)
                   .WithMany(s => s.Classes)
                   .HasForeignKey(e => e.StudentId)
-                  .OnDelete(DeleteBehavior.Cascade); 
-                  
+                  .OnDelete(DeleteBehavior.Cascade);
+
             entity.Property(c => c.DateOfClass)
                   .HasColumnType("date");
         });

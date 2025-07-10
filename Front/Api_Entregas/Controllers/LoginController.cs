@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.Json.Nodes;
 
 namespace Api_Entregas.Controllers
 {
@@ -49,7 +50,7 @@ namespace Api_Entregas.Controllers
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         //Estou passando o userData para a View, para que ela possa ser usada posteriormente
-                        var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
+                        var userData = JsonConvert.DeserializeObject<UserViewModel>(responseContent);
                         userData.Email = model.Email;
                         _logger.LogInformation($"Resposta da API: {responseContent}");
                         // Armazenar como JSON na sessão
@@ -102,7 +103,7 @@ namespace Api_Entregas.Controllers
                 {
                     var userPath = "/createUser";
                     string apiUrl = _configuration["ApiBackendSettings:UserUrl"] + userPath ?? string.Empty;
-                    string jsonBody = JsonConvert.SerializeObject(model);
+                    string jsonBody = JsonConvert.SerializeObject(model);                    
                     var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
                     _logger.LogInformation($"Fazendo requisição para {apiUrl + jsonBody}");
 

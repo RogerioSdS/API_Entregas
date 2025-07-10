@@ -15,7 +15,7 @@ namespace Api_Entregas.ViewModels
         public required string Password { get; set; }
         public required string FirstName { get; set; }
         public string? LastName { get; set; }
-        public string Role { get; set; } = "Admin";
+        public string Role { get; set; } = "User";
         public string? Address { get; set; }
         public string? Complement { get; set; }
         public string ZipCode { get; set; } = string.Empty;
