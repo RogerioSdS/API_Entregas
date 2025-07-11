@@ -3,8 +3,6 @@ using Api_Entregas.ViewModels;
 using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
-using System.Text.Json.Nodes;
 
 namespace Api_Entregas.Controllers
 {
@@ -50,8 +48,8 @@ namespace Api_Entregas.Controllers
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
                         //Estou passando o userData para a View, para que ela possa ser usada posteriormente
-                        var userData = JsonConvert.DeserializeObject<UserViewModel>(responseContent);
-                        userData.Email = model.Email;
+                        var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
+                        // userData.Email = model.Email;
                         _logger.LogInformation($"Resposta da API: {responseContent}");
                         // Armazenar como JSON na sessão
                         HttpContext.Session.SetString("UserData", JsonConvert.SerializeObject(userData));
@@ -103,12 +101,13 @@ namespace Api_Entregas.Controllers
                 {
                     var userPath = "/createUser";
                     string apiUrl = _configuration["ApiBackendSettings:UserUrl"] + userPath ?? string.Empty;
-                    string jsonBody = JsonConvert.SerializeObject(model);                    
+                    string jsonBody = JsonConvert.SerializeObject(model);
                     var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
                     _logger.LogInformation($"Fazendo requisição para {apiUrl + jsonBody}");
 
                     // Fazer a requisição Post para a API de usuários
                     var response = await _httpClient.PostAsync(apiUrl, content);
+                    TempData["FormData"] = $"Dados recebidos: Nome={model.FirstName}, Sobrenome={model.LastName}, Email={model.Email}, Telefone={model.Phone}, Endereço={model.Address}, Complemento={model.Complement}, Cidade={model.City}, CEP={model.Post}";
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -126,12 +125,14 @@ namespace Api_Entregas.Controllers
                         var errorContent = await response.Content.ReadAsStringAsync();
                         _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}, Resposta: {errorContent}");
                         ModelState.AddModelError("", "Erro ao registrar usuário.");
+                        return View(model);
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Erro ao registrar o usuário.");
                     ModelState.AddModelError("", "Ocorreu um erro ao processar o registro. Tente novamente.");
+                    return View(model);
                 }
             }
 

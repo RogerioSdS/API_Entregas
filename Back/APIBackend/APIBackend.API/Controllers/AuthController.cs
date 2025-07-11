@@ -3,6 +3,9 @@ using APIBackend.Application.Services.Interfaces;
 using APIBackend.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using NLog;
+using APIBackend.Domain.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace APIBackend.API.Controllers
 {
@@ -43,7 +46,7 @@ namespace APIBackend.API.Controllers
             var refreshTokenDto = await _authService.SaveRefreshTokenAsync(user);
             var token = await _authService.GenerateJwtTokenAsync(user);
 
-            return Ok(new { Token = token, RefreshToken = refreshTokenDto.Token });
+            return Ok(new { Token = token, RefreshToken = refreshTokenDto.Token, RefreshTokenExpiresAt = refreshTokenDto.ExpiresAt });
         }
 
         [HttpPost("refreshtoken")]
@@ -163,9 +166,18 @@ namespace APIBackend.API.Controllers
             catch (System.Exception)
             {
                 Console.WriteLine($"Erro ao redefinir senha para o e-mail: {email}");
-                
+
                 return BadRequest("Erro ao redefinir a senha.");
             }
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout([FromQuery] int id)
+        {
+            await _authService.RevokeTokensAsync(id);
+
+            return Ok(new { message = "Logout realizado com sucesso" });
         }
     }
 }

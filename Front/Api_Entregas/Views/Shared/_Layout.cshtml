@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Api_Entregas</title>
+    <title>@ViewData["Title"] - PedagoGisa</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/layout.css" asp-append-version="true" />
@@ -40,6 +40,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
+                        @if (!string.IsNullOrEmpty(userDataJson))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Dashboard">Financeiro</a>
+                            </li>
+                        }
                         @if (!string.IsNullOrEmpty(userDataJson))
                         {
                             <li class="nav-item">

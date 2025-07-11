@@ -11,10 +11,10 @@
 <div class="text-center">
         @{
             if (!string.IsNullOrEmpty(userDataJson))
-            {                
+            {
+                Console.WriteLine($"Dados usuario: {JsonConvert.DeserializeObject<UserViewModel>(userDataJson)}");
                 var userData = JsonConvert.DeserializeObject<UserViewModel>(userDataJson);
-                    <h1>Bem-vindo @userData.FirstName</h1>
-
+                    <h1>Bem-vindo @userData</h1>
             }
         }
 
