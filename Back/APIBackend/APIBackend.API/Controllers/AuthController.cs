@@ -40,18 +40,63 @@ namespace APIBackend.API.Controllers
             }
 
             _loggerNLog.Info($"Usuario logado com sucesso: {user.FirstName + " " + user.LastName} - {user.Email}");
+            
+            RefreshTokenDTO? foundRefreshToken = await _authService.GetValidateRefreshTokenByIdAsync(user.Id);
 
-            await _authService.RevokeTokensAsync(user.Id);
-
-            var refreshTokenDto = await _authService.SaveRefreshTokenAsync(user);
+            if (foundRefreshToken == null)
+            {
+                await _authService.RevokeTokensAsync(user.Id);
+                foundRefreshToken = await _authService.SaveRefreshTokenAsync(user);
+            }
+            
             var token = await _authService.GenerateJwtTokenAsync(user);
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None, // 👈 Obrigatório para cross-site
+                Expires = DateTime.UtcNow.AddMinutes(15)
+            };
+            Response.Cookies.Append("access_token", token, cookieOptions);
 
-            return Ok(new { Token = token, RefreshToken = refreshTokenDto.Token, RefreshTokenExpiresAt = refreshTokenDto.ExpiresAt });
+            var refreshCookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None, // 👈 Também precisa ser None
+                Expires = foundRefreshToken.ExpiresAt
+            };
+            Response.Cookies.Append("refresh_token", foundRefreshToken.Token, refreshCookieOptions);
+
+            return Ok(new { message = "Login realizado com sucesso" });
         }
 
-        [HttpPost("refreshtoken")]
+        [HttpPost("loginByRefreshToken")]
         [AllowAnonymous]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDTO model)
+        public async Task<IActionResult> LoginRefreshToken([FromBody] RefreshTokenRequestDTO model)
+        {
+            if (!ModelState.IsValid) { return BadRequest(ModelState); }
+
+            if (!await _authService.ValidateRefreshTokenAsync(model.RefreshToken))
+            {
+                return Unauthorized("Refresh token inválido ou expirado.");
+            }
+
+            var foundUser = await _authService.GetUserByRefreshTokenAsync(model.RefreshToken);
+            if (foundUser == null)
+            {
+                return Unauthorized("Refresh token inválido.");
+            }
+
+            var userWithRoles = await _authService.GetUserRolesAsync(foundUser);
+            var token = await _authService.GenerateJwtTokenAsync(userWithRoles);
+
+            return Ok(new { message = "Login realizado com sucesso" });
+        }
+
+        [HttpPost("generateRefreshToken")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GenerateRefreshToken([FromBody] RefreshTokenRequestDTO model)
         {
             var user = await _authService.GetUserByRefreshTokenAsync(model.RefreshToken);
             if (user == null)
@@ -70,7 +115,8 @@ namespace APIBackend.API.Controllers
             var refreshTokenDto = await _authService.SaveRefreshTokenAsync(userWithRoles);
             var token = await _authService.GenerateJwtTokenAsync(userWithRoles);
 
-            return Ok(new { Token = token, RefreshToken = refreshTokenDto.Token });
+            // return Ok(new { Token = token, RefreshToken = refreshTokenDto.Token });
+            return Ok(new { message = "Login realizado com sucesso" });
         }
 
         [HttpPost("GenerateEmailConfirmationToken")]
@@ -173,9 +219,31 @@ namespace APIBackend.API.Controllers
 
         [HttpPost("logout")]
         [Authorize]
-        public async Task<IActionResult> Logout([FromQuery] int id)
+        public async Task<IActionResult> Logout()
         {
-            await _authService.RevokeTokensAsync(id);
+            // Deleta os cookies
+            Response.Cookies.Delete("access_token");
+            Response.Cookies.Delete("refresh_token");            
+
+            // Lê o refresh token diretamente do cookie
+            var refreshToken = Request.Cookies["refresh_token"];
+
+            Console.WriteLine("Refresh token: " + refreshToken);
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return BadRequest("Nenhum refresh token encontrado.");
+            }
+
+            var foundRefreshToken = await _authService.GetTokenByRefreshTokenAsync(refreshToken);
+            Console.WriteLine("Found refresh token: " + foundRefreshToken.Id);
+            if (foundRefreshToken == null)
+            {
+                return BadRequest("Refresh token inválido.");
+            }
+
+            await _authService.RevokeRefreshTokenAsync(foundRefreshToken.Id);
+            Console.WriteLine("Refresh token revogado: " + foundRefreshToken.Id);
 
             return Ok(new { message = "Logout realizado com sucesso" });
         }

@@ -30,18 +30,11 @@ public interface IAuthService
     Task<RefreshTokenDTO> SaveRefreshTokenAsync(UserDTO userId);
 
     /// <summary>
-    /// Valida um refresh token pelo ID do usuário.
-    /// </summary>
-    /// <param name="userId">ID do usuário.</param>
-    /// <returns>Refresh token válido, ou null.</returns>
-    Task<RefreshTokenDTO?> ValidateRefreshTokenAsync(int userId);
-
-    /// <summary>
     /// Obtém um refresh token pelo ID.
     /// </summary>
     /// <param name="userId">ID do usuário.</param>
     /// <returns>Refresh token encontrado, ou null.</returns>
-    Task<RefreshTokenDTO?> GetRefreshTokenByIdAsync(int userId);
+    Task<RefreshTokenDTO?> GetValidateRefreshTokenByIdAsync(int userId);
 
     /// <summary>
     /// Obtém um usuário com base em um refresh token.
@@ -113,5 +106,19 @@ public interface IAuthService
     /// <param name="subject">Assunto.</param>
     /// <param name="message">Mensagem (HTML permitido).</param>
     Task SendEmailAsync(string email, string subject, string message);
+
+    /// <summary>
+    /// Valida um refresh token.
+    /// </summary>
+    /// <param name="token">Token de atualização.</param>
+    /// <returns>True se dentro da validade.</returns>
+    Task<bool> ValidateRefreshTokenAsync(string token);
+
+    /// <summary>
+    /// Obtém um refresh token pelo token de atualização.
+    /// </summary>
+    /// <param name="refreshToken">Token de atualização.</param>
+    /// <returns>Refresh token encontrado, ou null.</returns>
+    public Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken);
 }
 

@@ -2,21 +2,13 @@
 
 @{
     ViewData["Title"] = "Home Page";
+    
 }
 
-@{
-        var userDataJson = Context.Session.GetString("UserData");
-   }
 
 <div class="text-center">
-        @{
-            if (!string.IsNullOrEmpty(userDataJson))
-            {
-                Console.WriteLine($"Dados usuario: {JsonConvert.DeserializeObject<UserViewModel>(userDataJson)}");
-                var userData = JsonConvert.DeserializeObject<UserViewModel>(userDataJson);
-                    <h1>Bem-vindo @userDataJson</h1>
-            }
-        }
+        
+                    <h1>Bem-vindo @TempData["Sucesso"]</h1>        
 
     <p>A API pode ser acessada em <code>/api/usuarios</code>.</p>
 </div>

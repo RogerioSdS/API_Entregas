@@ -128,22 +128,10 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         return refreshTokenDto;
     }
 
-    public async Task<RefreshTokenDTO?> GetRefreshTokenByIdAsync(int tokenId)
+    public async Task<RefreshTokenDTO?> GetValidateRefreshTokenByIdAsync(int tokenId)
     {
-        var token = await _authRepo.GetTokenByIdAsync(tokenId);
+        var token = await _authRepo.GetValideTokenByIdAsync(tokenId);
         if (token == null)
-        {
-            return null;
-        }
-
-        var refreshTokenDto = _mapper.Map<RefreshTokenDTO>(token);
-        return refreshTokenDto;
-    }
-
-    public async Task<RefreshTokenDTO?> ValidateRefreshTokenAsync(int tokenId)
-    {
-        var token = await _authRepo.GetTokenByIdAsync(tokenId);
-        if (token == null || token.ExpiresAt < DateTime.UtcNow || token.IsRevoked)
         {
             return null;
         }
@@ -344,5 +332,27 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         {
             return false;
         }
+    }
+
+    public async Task<bool> ValidateRefreshTokenAsync(string token)
+    {
+        try
+        {
+            var refreshToken = await _authRepo.GetRefreshTokenByRefreshTokenAsync(token);
+            if (refreshToken != null)
+            {
+                return true;
+            }
+            return false;
+        }
+        catch (System.Exception ex)
+        {
+            throw new Exception("Erro ao validar refresh token: " + ex.Message);
+        }        
+    }
+
+    public Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken)
+    {
+        return _authRepo.GetTokenByRefreshTokenAsync(refreshToken);
     }
 }

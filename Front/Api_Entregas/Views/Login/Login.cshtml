@@ -10,12 +10,13 @@
 }
 
 <body class="login-page">
-    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal fade show" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true" style="display: block;">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content border-0 bg-transparent">
                 <div class="modal-body p-0">
                     <div class="card-login">
-                        <form id="loginForm">
+                        @* Formulário tradicional *@
+                        <form asp-action="Login" asp-controller="Login" method="post">
                             <div class="form-group">
                                 <input asp-for="Email" class="form-control" placeholder="Email ID" required />
                                 <span asp-validation-for="Email" class="text-danger"></span>
@@ -55,7 +56,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="~/js/toastr.min.js" asp-append-version="true"></script>
-    <script type="module" src="~/js/login/index.js" asp-append-version="true"></script>
 
     <!-- Script inline para mensagens iniciais -->
     <script>
@@ -72,6 +72,9 @@
                     <text>toastr.error('@error.ErrorMessage');</text>
                 }
             }
+
+            // Se quiser mostrar o modal automaticamente
+            $('#loginModal').modal('show');
         });
     </script>
 </body>

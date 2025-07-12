@@ -16,6 +16,13 @@ namespace APIBackend.Repositories.Interfaces
         /// </summary>
         /// <param name="id">Id do usuário.</param>
         /// <returns>O token de refresh correspondente ou null caso não exista.</returns>
+        public Task<RefreshToken?> GetValideTokenByIdAsync(int id);
+
+        /// <summary>
+        /// Obtém um token de refresh pelo id.
+        /// </summary>
+        /// <param name="id">Id do token de refresh.</param>
+        /// <returns>O token de refresh correspondente ou null caso não exista.</returns>
         public Task<RefreshToken?> GetTokenByIdAsync(int id);
 
         /// <summary>
@@ -23,7 +30,7 @@ namespace APIBackend.Repositories.Interfaces
         /// </summary>
         /// <param name="refreshToken">O valor do token de refresh.</param>
         /// <returns>O token de refresh correspondente ou null caso não exista.</returns>
-        public Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken);
+        public Task<RefreshToken?> GetRefreshTokenByRefreshTokenAsync(string refreshToken);
 
         /// <summary>
         /// Retorna todos os tokens de refresh associados a um usuário específico.
@@ -92,6 +99,14 @@ namespace APIBackend.Repositories.Interfaces
         /// <param name="token">Token de redefinição de senha.</param>
         /// <param name="newPassword">Nova senha para o usuário.</param>
         /// <returns>True se a redefinição for bem-sucedida, false caso contrário.</returns>
+        /// 
         public Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
+
+        /// <summary>
+        /// Obtém um token de refresh pelo valor do token.
+        /// </summary>
+        /// <param name="refreshToken">O valor do token de refresh.</param>
+        /// <returns>O token de refresh correspondente ou null caso não exista.</returns>
+        public Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken);
     }
 }

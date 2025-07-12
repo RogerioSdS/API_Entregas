@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Api_Entregas.ViewModels
+@model SignInViewModel 
+
+
+
+<!DOCTYPE html>
 <html lang="BR">
 
 <head>
@@ -26,7 +31,7 @@
     
     
     @{
-        var userDataJson = Context.Session.GetString("UserData");
+        var userDataJson = Context.Session.GetString("Logado");
     }
 
     <header>
@@ -40,12 +45,6 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        @if (!string.IsNullOrEmpty(userDataJson))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Dashboard">Financeiro</a>
-                            </li>
-                        }
                         @if (!string.IsNullOrEmpty(userDataJson))
                         {
                             <li class="nav-item">

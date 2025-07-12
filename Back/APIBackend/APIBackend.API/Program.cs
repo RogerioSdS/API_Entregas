@@ -125,16 +125,42 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"], // Ex.: "sua-api"
-        ValidAudience = builder.Configuration["Jwt:Audience"], // Ex.: "sua-api-cliente"
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("A chave de assinatura JWT não foi configurada."))) // Chave secreta
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
+                ?? throw new InvalidOperationException("Chave JWT não configurada.")))
     };
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", corsBuilder =>
+    {
+        corsBuilder.WithOrigins(builder.Configuration["CORS:APPUrl"])
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials(); // 👈 IMPORTANTE
+    });
 });
 
 //Criando a política de autorização
@@ -165,6 +191,7 @@ if (args.Contains("--seed"))
     return; // Para evitar que o restante do pipeline seja executado    
 }
 
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.UseAuthentication(); // Adiciona autenticação
 app.UseAuthorization(); // Adiciona autorização
