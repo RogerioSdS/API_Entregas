@@ -48,40 +48,72 @@ namespace APIBackend.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var result = await _userService.AddUserAsync(model);
-
-            if (result == null)
+            try
             {
-                return BadRequest($"Erro ao criar usuário.{model.FirstName} {model.LastName}");
+                var result = await _userService.AddUserAsync(model);
+                _loggerNLog.Info($"Usuario criado com sucesso: {result.FirstName + " " + result.LastName} - {result.Email}");
+
+                if (result.Role.Contains("Admin"))
+                {
+                    return Created("", result);
+                }
+                else
+                {
+                    return Created("", new { result.FirstName, result.LastName, result.Email });
+                }
+
+            }
+            catch (NullReferenceException ex)
+            {
+                _loggerNLog.Error(ex, $"Erro ao criar usuário: {model.FirstName} {model.LastName}");
+
+                return BadRequest(ex.Message ?? "Erro interno ao criar usuário.");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error(ex, $"Erro ao criar usuário: {model.FirstName} {model.LastName}");
+
+                return StatusCode(500, "Erro interno ao criar usuário.");
             }
 
-            _loggerNLog.Info($"Usuario criado com sucesso: {result.FirstName + " " + result.LastName} - {result.Email}");
-
-            if(result.Role.Contains("Admin"))
-            {
-                return Created("", result);
-            }
-            else
-            {
-                return Created("", new { result.FirstName, result.LastName, result.Email });
-            }
         }
 
         [HttpGet("getUserById")]
         public async Task<IActionResult> GetUserById([FromQuery] int id)
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null)
+            if (id <= 0)
             {
-                return NotFound();
+                return BadRequest("ID do usuário deve ser um número positivo.");
             }
 
-            return Ok(new { User = user, Roles = await _userService.GetRolesAsync(user) });
+            try
+            {
+                var user = await _userService.GetUserByIdAsync(id);
+
+                return Ok(new { User = user, Roles = await _userService.GetRolesAsync(user) });
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                _loggerNLog.Error(ex, $"Erro ao buscar usuário com ID inválido: {id}");
+
+                return BadRequest("ID do usuário deve ser um número positivo.");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error(ex, $"Erro ao buscar usuário com ID: {id}");
+
+                return StatusCode(500, "Erro interno ao buscar usuário.");
+            }
         }
 
         [HttpGet("getUserByName")]
         public async Task<IActionResult> GetUserByName([FromQuery] string name)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                return BadRequest("Nome do usuário deve ser informado.");
+            }
+
             var user = await _userService.GetUserByNameAsync(name);
             if (user == null)
             {
@@ -90,27 +122,60 @@ namespace APIBackend.API.Controllers
 
             return Ok(user);
         }
-       
+
+        [AllowAnonymous]
+        [HttpGet("getUserByEmail")]
+        public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email do usuário deve ser informado.");
+            }
+
+            try
+            {
+                var user = await _userService.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    return NotFound("Usuário não encontrado.");
+                }
+
+                return Ok(user);
+            }   
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest($"Erro ao buscar usuário, email inválido: {email}");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error(ex, $"Erro ao buscar usuário com email: {email}");
+                return StatusCode(500, "Erro interno ao buscar usuário.");
+            }
+        }
+
         [HttpPut("UpdateUserDetails")]
         public async Task<IActionResult> UpdateUserDetails([FromBody] UserUpdateFromUserDTO model)
         {
-            if (model == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Usuário não pode ser nulo.");
+                return BadRequest(ModelState);
             }
 
-            if (model.Email == null || model.Email == string.Empty)
+            try
             {
-                return BadRequest("Email do usuário inválido.");
+                var result = await _userService.UpdateUserFromUserAsync(model);
+
+                return Ok(result);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest("usuario não encontrado ou campos inválidos: " + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Erro interno ao atualizar usuário." + ex.Message);
             }
 
-            var result = await _userService.UpdateUserFromUserAsync(model);
-            if (result == null)
-            {
-                return BadRequest("Erro ao atualizar usuário.");
-            }
-
-            return Ok(result);
         }
     }
 }

@@ -66,7 +66,7 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
             new Claim(ClaimTypes.Role, user.Role )
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key está faltando na configuração.")));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
@@ -128,22 +128,10 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         return refreshTokenDto;
     }
 
-    public async Task<RefreshTokenDTO?> GetRefreshTokenByIdAsync(int tokenId)
+    public async Task<RefreshTokenDTO?> GetValidateRefreshTokenByIdAsync(int tokenId)
     {
-        var token = await _authRepo.GetTokenByIdAsync(tokenId);
+        var token = await _authRepo.GetValideTokenByIdAsync(tokenId);
         if (token == null)
-        {
-            return null;
-        }
-
-        var refreshTokenDto = _mapper.Map<RefreshTokenDTO>(token);
-        return refreshTokenDto;
-    }
-
-    public async Task<RefreshTokenDTO?> ValidateRefreshTokenAsync(int tokenId)
-    {
-        var token = await _authRepo.GetTokenByIdAsync(tokenId);
-        if (token == null || token.ExpiresAt < DateTime.UtcNow || token.IsRevoked)
         {
             return null;
         }
@@ -205,14 +193,14 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         {
             var smtpClient = new SmtpClient(_configuration["Smtp:Host"])
             {
-                Port = int.Parse(_configuration["Smtp:Port"]),
+                Port = int.Parse(_configuration["Smtp:Port"] ?? "587"), // Padrão 587 para TLS
                 Credentials = new NetworkCredential(_configuration["Smtp:Username"], _configuration["Smtp:Password"]),
                 EnableSsl = true,
             };
 
             var mailMessage = new MailMessage
             {
-                From = new MailAddress(_configuration["Smtp:From"]),
+                From = new MailAddress(_configuration["Smtp:From"] ?? ""),
                 Subject = subject,
                 Body = message,
                 IsBodyHtml = true,
@@ -314,9 +302,24 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
             return null;
         }
 
-        var urlToTokenConfirmedEmail = $"{_configuration["Url:ApiUrl"]}/api/Auth/ConfirmEmail?email={HttpUtility.UrlEncode(model.Email)}&token={HttpUtility.UrlEncode(token)}";
+        var urlToResetPassword = $"{_configuration["Url:ApiUrl"]}/api/Auth/ConfirmEmail?email={HttpUtility.UrlEncode(model.Email)}&token={HttpUtility.UrlEncode(token)}";
 
-        return urlToTokenConfirmedEmail;
+        try
+        {
+            var message = $@"<h3>Redefinir sua senha</h3>
+                    <p>Você solicitou a redefinição de senha. Clique no link abaixo para redefinir:</p>
+                    <p><a href='{urlToResetPassword}'>Redefinir senha</a></p>";
+
+            await SendEmailAsync(model.Email, "Redefinir senha", message);
+            _loggerNLog.Info($"E-mail de redefinição de senha enviado para: {model.Email}");
+        }
+        catch (Exception ex)
+        {
+            _loggerNLog.Error(ex, $"Erro ao enviar e-mail de redefinição de senha para: {model.Email}");
+            return null;
+        }
+
+        return urlToResetPassword;
     }
 
     public async Task<bool> ConfirmResetPasswordAsync(string email, string token, string newPassword)
@@ -329,5 +332,27 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         {
             return false;
         }
+    }
+
+    public async Task<bool> ValidateRefreshTokenAsync(string token)
+    {
+        try
+        {
+            var refreshToken = await _authRepo.GetRefreshTokenByRefreshTokenAsync(token);
+            if (refreshToken != null)
+            {
+                return true;
+            }
+            return false;
+        }
+        catch (System.Exception ex)
+        {
+            throw new Exception("Erro ao validar refresh token: " + ex.Message);
+        }        
+    }
+
+    public Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken)
+    {
+        return _authRepo.GetTokenByRefreshTokenAsync(refreshToken);
     }
 }

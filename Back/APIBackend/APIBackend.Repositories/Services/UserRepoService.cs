@@ -21,16 +21,6 @@ public class UserRepoService : IUserRepo
         
     }
 
-    /// <summary>
-    /// Adiciona um novo usuário ao sistema com uma role específica.
-    /// </summary>
-    /// <param name="user">Usuário a ser adicionado.</param>
-    /// <param name="role">Papel do usuário.</param>
-    /// <param name="password">Senha do usuário.</param>
-    /// <returns>O usuário criado.</returns>
-    /// <exception cref="ArgumentNullException">Lançada quando o usuário é nulo.</exception>
-    /// <exception cref="ArgumentException">Lançada quando o papel é inválido.</exception>
-    /// <exception cref="Exception">Lançada quando ocorre um erro ao criar ou atribuir o papel ao usuário.</exception>
     public async Task<User> AddUserAsync(User user)
     {
         //analisar se essa regra de negocio não deve ser feita na service da Application
@@ -81,55 +71,24 @@ public class UserRepoService : IUserRepo
         }        
     }
 
-    /// <summary>
-    /// Retorna a lista de todos os usuários cadastrados.
-    /// </summary>
-    /// <returns>Lista de usuários.</returns>
     public async Task<List<User>> GetUsersAsync()
     {
         return await _userContext.Users.ToListAsync();
     }
 
-    /// <summary>
-    /// Busca um usuário pelo seu email.
-    /// </summary>
-    /// <param name="email">Email do usuário a ser buscado.</param>
-    /// <returns>O usuário encontrado.</returns>
-    /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
-
     public async Task<User> GetUserByEmailAsync(string email)
     {
         return await _userManager.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new Exception("Usuário não encontrado.");
     }
-
-    /// <summary>
-    /// Busca um usuário pelo seu ID.
-    /// </summary>
-    /// <param name="id">ID do usuário.</param>
-    /// <returns>O usuário encontrado.</returns>
-    /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
     public async Task<User> GetUserByIdAsync(int id)
     {
         return await _userManager.FindByIdAsync(id.ToString()) ?? throw new Exception("Usuário não encontrado.");
     }
 
-    /// <summary>
-    /// Busca um usuário pelo seu nome.
-    /// </summary>
-    /// <param name="name">Nome do usuário.</param>
-    /// <returns>O usuário encontrado.</returns>
-    /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
     public async Task<User?> GetUserByNameAsync(string name)
     {
         return await _userManager.Users.FirstOrDefaultAsync(u => u.FirstName == name) ?? null;
     }
-
-    /// <summary>
-    /// Atualiza os dados de um usuário no sistema.
-    /// </summary>
-    /// <param name="user">Usuário com os dados atualizados.</param>
-    /// <returns>Retorna o usuário atualizado se a operação for bem-sucedida, caso contrário retorna null.</returns>
-    /// <exception cref="Exception">Lançada quando ocorre um erro ao atualizar o usuário.</exception>
 
     public async Task<User> UpdateUserAsync(User user)
     {
@@ -140,23 +99,12 @@ public class UserRepoService : IUserRepo
         return user;
     }
 
-    /// <summary>
-    /// Remove um usuário do sistema.
-    /// </summary>
-    /// <param name="user">Usuário a ser removido.</param>
-    /// <returns>True se a remoção for bem-sucedida.</returns>
-    /// <exception cref="Exception">Lançada quando o usuário não é encontrado.</exception>
     public async Task<bool> DeleteUserAsync(User user)
     {
         await _userManager.DeleteAsync(user);
         return true;
     }
 
-    /// <summary>
-    /// Obtém a lista de roles atribuídas a um usuário.
-    /// </summary>
-    /// <param name="user">Usuário para consulta de roles.</param>
-    /// <returns>Lista de roles do usuário.</returns>
     public async Task<List<string>> GetRolesAsync(User user)
     {
         var roles = await _userManager.GetRolesAsync(user);

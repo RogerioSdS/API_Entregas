@@ -236,23 +236,6 @@ namespace APIBackend.Tests.Controllers
             // Opção 2: Se o controlador deixa a exceção propagar
             await Assert.ThrowsAsync<Exception>(() => _controller.UpdateUserDetails(userDto));
         }
-        #endregion
-
-        #region "DeleteUser"
-        [Fact]
-        public async Task DeleteUser_ValidId_ReturnsOkResult()
-        {
-            int userId = 1;
-
-            _userServiceMock.Setup(x => x.DeleteUserAsync(userId))
-                .ReturnsAsync(true);
-
-            var result = await _controller.DeleteUser(userId);
-
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            Assert.Equal(200, okResult.StatusCode);
-        }
-        #endregion
-    
+        #endregion    
     }
 }

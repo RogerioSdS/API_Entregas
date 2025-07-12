@@ -21,7 +21,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAutoMapper(typeof(ProfilesDTO).Assembly);// Registra todos os profiles no assembly
 
 // Adicione serviços para controllers
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.WriteIndented = true;
+    });
 
 //Configuração do banco de dados
 builder.Services.AddDbContext<ApiDbContext>(options =>
@@ -49,6 +54,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepo, UserRepoService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAuthRepo, AuthRepoService>();
+builder.Services.AddScoped<IStudentRepo, StudentRepoService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IClassDetailsService, ClassDetailsService>();
+builder.Services.AddScoped<IClassDetailsRepo, ClassDetailsRepoService>();
 
 // Configurar o NLog como provedor de logging
 builder.Logging.ClearProviders(); // Remover provedores padrão (ex.: Console)
@@ -72,6 +81,32 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 
+    // 🔒 Configuração do Bearer Token
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Insira o token JWT no campo abaixo. Ex: **Bearer {seu_token}**"
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+
     // Caminho dinâmico para o arquivo XML
     var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFilename);
@@ -90,16 +125,42 @@ builder.Services.AddAuthentication(options =>
 })
 .AddJwtBearer(options =>
 {
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = builder.Configuration["Jwt:Issuer"], // Ex.: "sua-api"
-        ValidAudience = builder.Configuration["Jwt:Audience"], // Ex.: "sua-api-cliente"
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])) // Chave secreta
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]
+                ?? throw new InvalidOperationException("Chave JWT não configurada.")))
     };
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", corsBuilder =>
+    {
+        corsBuilder.WithOrigins(builder.Configuration["CORS:APPUrl"])
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials(); // 👈 IMPORTANTE
+    });
 });
 
 //Criando a política de autorização
@@ -116,11 +177,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Minha API v1"));
-    app.UseDeveloperExceptionPage();        
+    app.UseDeveloperExceptionPage();
 }
 
 // Insere o seeders com os dados se a flag --seed for passada --dotnet run --seed
-if(args.Contains("--seed"))
+if (args.Contains("--seed"))
 {
     using var scope = app.Services.CreateScope();
     var services = scope.ServiceProvider;
@@ -130,6 +191,7 @@ if(args.Contains("--seed"))
     return; // Para evitar que o restante do pipeline seja executado    
 }
 
+app.UseCors("CorsPolicy");
 app.UseHttpsRedirection();
 app.UseAuthentication(); // Adiciona autenticação
 app.UseAuthorization(); // Adiciona autorização

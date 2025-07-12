@@ -1,110 +1,145 @@
+using APIBackend.Application.DTOs;
+using APIBackend.Application.Services.Interfaces;
+using APIBackend.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using NLog;
 
 namespace APIBackend.API.Controllers
 {
-    [Route("api/[controller]")]
+    [Authorize(Roles = "Manager,Admin")]
+    [Route("api/student")]
     [ApiController]
-    public class StudentController : ControllerBase
+    public class StudentController(IStudentService studentService) : ControllerBase
     {
-         private readonly IUserService _userService;
+        private readonly IStudentService _studentService = studentService;
         protected Logger _loggerNLog = LogManager.GetCurrentClassLogger();
 
-        public UsersController(IUserService userService)
-        {
-            _userService = userService;
-        }
-
-        /// <summary>
-        /// Cria um novo usuário no sistema.
-        /// </summary>
-        /// <param name="model">O objeto de transferência contendo os detalhes do usuário a ser criado.</param>
-        /// <returns>
-        /// Um <see cref="IActionResult"/> indicando o resultado da operação:
-        /// <list type="bullet">
-        /// <item><description>Retorna <see cref="BadRequestObjectResult"/> (400) se o estado do modelo for inválido ou se houver um erro ao criar o usuário.</description></item>
-        /// <item><description>Retorna <see cref="CreatedResult"/> (201) com os detalhes do usuário criado se a operação for bem-sucedida.</description></item>
-        /// </list>
-        /// </returns>
-        /// <remarks>
-        /// Certifique-se de que o <paramref name="model"/> contém dados válidos antes de chamar este método.
-        /// A resposta pode incluir lógica adicional para restringir certos detalhes com base na função do usuário (por exemplo, administrador).
-        /// </remarks>
         [AllowAnonymous]
-        [HttpPost("createUser")]
-        /*Antes de permitir utilizar o método precisa estabelecer o tipo de meio de criação, por exemplo será pelo APP, pela pagina web ou pelo admin, tipo se for o proprio user ou admin, para gerir a resposta*/
-        public async Task<IActionResult> CreateUser([FromBody] UserDTO model)
+        [HttpPost("createStudent")]
+        public async Task<IActionResult> CreateStudent([FromBody] StudentDTO model)
         {
             // Verifica se o modelo recebido (ex.: DTO com dados enviados pelo cliente) atende às regras de validação definidas
             // (ex.: [Required], [StringLength], [EmailAddress] em propriedades do DTO).
+            Console.WriteLine(ModelState.IsValid);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var result = await _userService.AddUserAsync(model);
-
-            if (result == null)
+            try
             {
-                return BadRequest($"Erro ao criar usuário.{model.FirstName} {model.LastName}");
+                var result = await _studentService.AddStudentAsync(model);
+                _loggerNLog.Info($"Usuário criado com sucesso: {result.FirstName} {result.LastName} - {result.Email}");
+
+                return Created("", new { result });
             }
-
-            _loggerNLog.Info($"Usuario criado com sucesso: {result.FirstName + " " + result.LastName} - {result.Email}");
-
-            if(result.Role.Contains("Admin"))
+            catch (Exception ex) when (ex is ArgumentNullException || ex is InvalidOperationException || ex is ArgumentException)
             {
-                return Created("", result);
+                _loggerNLog.Error($"Erro ao criar estudante: {ex.Message}");
+
+                return BadRequest($"Erro ao criar estudante: {ex.Message}");
             }
-            else
+            catch (Exception ex)
             {
-                return Created("", new { result.FirstName, result.LastName, result.Email });
+                _loggerNLog.Error($"Erro inesperado ao criar estudante: {ex.Message}");
+                return StatusCode(500, "Erro interno do servidor.");
             }
         }
 
-        [HttpGet("getUserById")]
-        public async Task<IActionResult> GetUserById([FromQuery] int id)
+        [HttpGet("getStudents")]
+        public async Task<IActionResult> GetStudents()
         {
-            var user = await _userService.GetUserByIdAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            var students = await _studentService.GetStudentsAsync();
 
-            return Ok(new { User = user, Roles = await _userService.GetRolesAsync(user) });
+            return Ok(students);
         }
 
-        [HttpGet("getUserByName")]
-        public async Task<IActionResult> GetUserByName([FromQuery] string name)
+
+        [HttpGet("getStudentById")]
+        public async Task<IActionResult> GetStudentById([FromQuery] int id)
         {
-            var user = await _userService.GetUserByNameAsync(name);
-            if (user == null)
+            if (id <= 0)
             {
-                return NotFound("Usuario não encontrado!");
+                return BadRequest("O ID do estudante deve ser um número positivo.");
             }
 
-            return Ok(user);
+            try
+            {
+                var student = await _studentService.GetStudentByIdAsync(id);
+
+                return Ok(student);
+            }
+            catch (Exception ex) when (ex is ArgumentOutOfRangeException || ex is NullReferenceException)
+            {
+                _loggerNLog.Error($"Erro ao buscar estudante por ID: {ex.Message}");
+
+                return NotFound($"Estudante com ID {id} não encontrado.");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error($"Erro inesperado ao buscar estudante por ID: {ex.Message}");
+
+                return StatusCode(500, "Erro interno do servidor.");
+            }
+
         }
-       
-        [HttpPut("UpdateUserDetails")]
-        public async Task<IActionResult> UpdateUserDetails([FromBody] UserUpdateFromUserDTO model)
+
+        [HttpGet("getStudentByName")]
+        public async Task<IActionResult> GetStudentByName([FromQuery] string name)
         {
-            if (model == null)
+            if (string.IsNullOrWhiteSpace(name))
             {
-                return BadRequest("Usuário não pode ser nulo.");
+                return BadRequest("O nome do estudante deve ser preenchido.");
             }
 
-            if (model.Email == null || model.Email == string.Empty)
+            try
             {
-                return BadRequest("Email do usuário inválido.");
-            }
+                var students = await _studentService.GetStudentByNameAsync(name);
 
-            var result = await _userService.UpdateUserFromUserAsync(model);
-            if (result == null)
+                return Ok(students);
+            }
+            catch (Exception ex) when (ex is ArgumentException || ex is InvalidOperationException)
             {
-                return BadRequest("Erro ao atualizar usuário.");
-            }
+                _loggerNLog.Error($"Erro ao buscar estudante por nome: {ex.Message}");
 
-            return Ok(result);
+                return NotFound($"Nenhum estudante encontrado com o nome: {name}");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error($"Erro inesperado ao buscar estudante por nome: {ex.Message}");
+
+                return StatusCode(500, "Erro interno do servidor.");
+            }
         }
+
+        [HttpPut("UpdateStudent")]
+        public async Task<IActionResult> UpdateStudent([FromBody] UpdateStudentDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _studentService.UpdateStudentAsync(model);
+
+                return Ok(result);
+            }
+            catch (Exception ex) when (ex is ArgumentNullException || ex is ArgumentOutOfRangeException || ex is InvalidOperationException)
+            {
+                _loggerNLog.Error($"Erro ao buscar estudante por nome: {ex.Message}");
+
+                return NotFound($"Nenhum estudante encontrado com o nome: {model.FirstName}");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error($"Erro inesperado ao atualizar estudante com o nome: {ex.Message}");
+
+                return StatusCode(500, "Erro interno do servidor.");
+            }
+        }        
     }
 }

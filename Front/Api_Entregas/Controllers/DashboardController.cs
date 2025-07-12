@@ -23,16 +23,7 @@ namespace Api_Entregas.Controllers
         [HttpGet]
         public IActionResult Dashboard()
         {
-            var userDataJson = HttpContext.Session.GetString("UserData");
-
-            if (string.IsNullOrEmpty(userDataJson))
-            {
-                return RedirectToAction("Login", "Login", new { actionDemanded = "Dashboard" });
-            }
-
-            var userData = JsonConvert.DeserializeObject<SignInViewModel>(userDataJson);
-
-            return View("Dashboard", userData);
+            return View("Dashboard");
         }
 
         /*[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

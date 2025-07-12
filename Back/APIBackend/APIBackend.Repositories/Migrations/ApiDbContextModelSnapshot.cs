@@ -17,6 +17,34 @@ namespace APIBackend.Repositories.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
 
+            modelBuilder.Entity("APIBackend.Domain.Identity.ClassDetails", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ClassType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("DateOfClass")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("DtModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("QuantityHourClass")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("ClassDetails");
+                });
+
             modelBuilder.Entity("APIBackend.Domain.Identity.RefreshToken", b =>
                 {
                     b.Property<int>("Id")
@@ -84,6 +112,45 @@ namespace APIBackend.Repositories.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
+            modelBuilder.Entity("APIBackend.Domain.Identity.Student", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("DateOfBirth")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("PriceClasses")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("ResponsibleId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ResponsibleId");
+
+                    b.ToTable("Students");
+                });
+
             modelBuilder.Entity("APIBackend.Domain.Identity.User", b =>
                 {
                     b.Property<int>("Id")
@@ -99,6 +166,9 @@ namespace APIBackend.Repositories.Migrations
                     b.Property<string>("Address")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal>("AgreedPrice")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("City")
                         .HasColumnType("TEXT");
 
@@ -108,6 +178,9 @@ namespace APIBackend.Repositories.Migrations
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("date");
 
                     b.Property<string>("CreditCardNumber")
                         .HasColumnType("TEXT");
@@ -134,6 +207,9 @@ namespace APIBackend.Repositories.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FoneNumber")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("IsAdmin")
                         .HasColumnType("INTEGER");
 
@@ -146,6 +222,9 @@ namespace APIBackend.Repositories.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Modified")
+                        .HasColumnType("date");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -300,6 +379,17 @@ namespace APIBackend.Repositories.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("APIBackend.Domain.Identity.ClassDetails", b =>
+                {
+                    b.HasOne("APIBackend.Domain.Identity.Student", "Student")
+                        .WithMany("Classes")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("APIBackend.Domain.Identity.RefreshToken", b =>
                 {
                     b.HasOne("APIBackend.Domain.Identity.User", "User")
@@ -309,6 +399,16 @@ namespace APIBackend.Repositories.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("APIBackend.Domain.Identity.Student", b =>
+                {
+                    b.HasOne("APIBackend.Domain.Identity.User", "Responsible")
+                        .WithMany("Students")
+                        .HasForeignKey("ResponsibleId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Responsible");
                 });
 
             modelBuilder.Entity("APIBackend.Domain.Identity.UserRole", b =>
@@ -362,9 +462,16 @@ namespace APIBackend.Repositories.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("APIBackend.Domain.Identity.Student", b =>
+                {
+                    b.Navigation("Classes");
+                });
+
             modelBuilder.Entity("APIBackend.Domain.Identity.User", b =>
                 {
                     b.Navigation("RefreshToken");
+
+                    b.Navigation("Students");
 
                     b.Navigation("UserRoles");
                 });

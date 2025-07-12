@@ -9,7 +9,9 @@ namespace Api_Entregas.ViewModels
     {
         public string? Token { get; set; }
         public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiresAt { get; set; }
         public string? Email { get; set; }
         public DateTime StartSession { get; set; } = DateTime.Now;
+        public bool SignIn { get; set; }
     }
 }
