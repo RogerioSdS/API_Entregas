@@ -15,14 +15,14 @@
             <div class="modal-content border-0 bg-transparent">
                 <div class="modal-body p-0">
                     <div class="card-login">
-                        <form asp-action="Login" method="post">
+                        <form id="loginForm">
                             <div class="form-group">
-                                <input asp-for="Email" class="form-control" placeholder="Email ID" />
+                                <input asp-for="Email" class="form-control" placeholder="Email ID" required />
                                 <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
 
                             <div class="form-group">
-                                <input asp-for="Password" class="form-control" placeholder="Password" type="password" />
+                                <input asp-for="Password" class="form-control" placeholder="Password" type="password" required />
                                 <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
 
@@ -55,18 +55,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="~/js/toastr.min.js" asp-append-version="true"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script type="module" src="~/js/login/index.js" asp-append-version="true"></script>
 
+    <!-- Script inline para mensagens iniciais -->
     <script>
         $(document).ready(function () {
-            toastr.options = {
-                closeButton: true,
-                positionClass: "toast-bottom-center",
-                progressBar: true,
-                timeOut: "5000",
-                preventDuplicates: true
-            };
-
             @if (TempData["SuccessMessage"] != null)
             {
                 <text>toastr.success('@TempData["SuccessMessage"]');</text>
@@ -79,8 +72,6 @@
                     <text>toastr.error('@error.ErrorMessage');</text>
                 }
             }
-
-            $('#loginModal').modal('show');
         });
     </script>
 </body>
