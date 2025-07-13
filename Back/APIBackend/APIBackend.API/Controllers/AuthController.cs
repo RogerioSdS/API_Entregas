@@ -40,7 +40,7 @@ namespace APIBackend.API.Controllers
             }
 
             _loggerNLog.Info($"Usuario logado com sucesso: {user.FirstName + " " + user.LastName} - {user.Email}");
-            
+
             RefreshTokenDTO? foundRefreshToken = await _authService.GetValidateRefreshTokenByIdAsync(user.Id);
 
             if (foundRefreshToken == null)
@@ -48,7 +48,7 @@ namespace APIBackend.API.Controllers
                 await _authService.RevokeTokensAsync(user.Id);
                 foundRefreshToken = await _authService.SaveRefreshTokenAsync(user);
             }
-            
+
             var token = await _authService.GenerateJwtTokenAsync(user);
             var cookieOptions = new CookieOptions
             {
@@ -77,12 +77,23 @@ namespace APIBackend.API.Controllers
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
-            if (!await _authService.ValidateRefreshTokenAsync(model.RefreshToken))
+            var refreshToken = Request.Cookies["refresh_token"];
+
+            if (string.IsNullOrEmpty(refreshToken))
             {
-                return Unauthorized("Refresh token inválido ou expirado.");
+                return Unauthorized("Nenhum refresh token encontrado.");
             }
 
-            var foundUser = await _authService.GetUserByRefreshTokenAsync(model.RefreshToken);
+            var isValid = await _authService.ValidateRefreshTokenAsync(refreshToken);
+
+            if (!isValid)
+            {
+                // 🔒 Token inválido ou expirado — retorno específico
+                Response.Headers.Add("Token-Error", "refresh-expired");
+                return Unauthorized("Refresh token expirado.");
+            }
+
+            var foundUser = await _authService.GetUserByRefreshTokenAsync(refreshToken);
             if (foundUser == null)
             {
                 return Unauthorized("Refresh token inválido.");
@@ -223,7 +234,7 @@ namespace APIBackend.API.Controllers
         {
             // Deleta os cookies
             Response.Cookies.Delete("access_token");
-            Response.Cookies.Delete("refresh_token");            
+            Response.Cookies.Delete("refresh_token");
 
             // Lê o refresh token diretamente do cookie
             var refreshToken = Request.Cookies["refresh_token"];

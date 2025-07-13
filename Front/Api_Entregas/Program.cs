@@ -13,6 +13,16 @@ builder.Services.AddRazorPages(); // Opcional, se usar páginas Razor
 // Registrar serviços personalizados da camada de serviço
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+// O HttpContextAccessor é um serviço que permite acessar o contexto HTTP da requisição
+// em qualquer lugar da aplicação, sem precisar passar o contexto como parâmetro.
+// Ele é necessário para que o serviço de sessão possa recuperar a sessão atual.
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+// O serviço de sessão é responsável por armazenar e recuperar os dados da sessão.
+// Ele é implementado como um singleton, pois precisa ser acessado de qualquer lugar
+// da aplicação, e precisa manter os dados da sessão entre as requisições.
+builder.Services.AddScoped<ISessionService, SessionService>();
+
 // ✅ Adicionar suporte a Session
 builder.Services.AddDistributedMemoryCache(); // Armazena sessões na memória
 builder.Services.AddSession(options =>

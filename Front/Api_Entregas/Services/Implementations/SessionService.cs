@@ -4,9 +4,10 @@ using Newtonsoft.Json;
 
 namespace Api_Entregas.Services.Implementations
 {
-    public class SessionService : ISessionService
+     public class SessionService : ISessionService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private const string UserDataKey = "UserData";
 
         public SessionService(IHttpContextAccessor httpContextAccessor)
         {
@@ -15,18 +16,26 @@ namespace Api_Entregas.Services.Implementations
 
         public void SetUserData(SignInViewModel userData)
         {
-            _httpContextAccessor.HttpContext?.Session.SetString("UserData", JsonConvert.SerializeObject(userData));
+            var json = JsonConvert.SerializeObject(userData);
+            _httpContextAccessor.HttpContext?.Session.SetString(UserDataKey, json);
         }
 
-        public SignInViewModel GetUserData()
+        public SignInViewModel? GetUserData()
         {
-            var sessionData = _httpContextAccessor.HttpContext?.Session.GetString("UserData");
-            return string.IsNullOrEmpty(sessionData) ? null : JsonConvert.DeserializeObject<SignInViewModel>(sessionData);
+            var sessionData = _httpContextAccessor.HttpContext?.Session.GetString(UserDataKey);
+            return string.IsNullOrWhiteSpace(sessionData) 
+                ? null 
+                : JsonConvert.DeserializeObject<SignInViewModel>(sessionData);
+        }
+
+        public bool IsLoggedIn()
+        {
+            return GetUserData() != null;
         }
 
         public void ClearUserData()
         {
-            _httpContextAccessor.HttpContext?.Session.Remove("UserData");
+            _httpContextAccessor.HttpContext?.Session.Remove(UserDataKey);
         }
     }
 }

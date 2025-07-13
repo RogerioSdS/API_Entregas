@@ -24,7 +24,8 @@ namespace Api_Entregas.Services.Implementations
         {
             try
             {
-                string apiUrl = $"{_configuration["ApiBackendSettings:AuthUrl"]}/login";
+                var urlPath = "/login";
+                string apiUrl = $"{_configuration["ApiBackendSettings:AuthUrl"]}{urlPath}";
                 var jsonBody = JsonConvert.SerializeObject(model);
                 var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
 
@@ -48,6 +49,33 @@ namespace Api_Entregas.Services.Implementations
             {
                 _logger.LogError(ex, "Erro ao autenticar o usuário.");
                 return ServiceResult<SignInViewModel>.ErrorResult("Ocorreu um erro ao processar o login.");
+            }
+        }
+
+        public async Task<ServiceResult<string>> LogoutAsync()
+        {
+            try
+            {
+                var urlPath = "/logout";
+                string apiUrl = $"{_configuration["ApiBackendSettings:AuthUrl"]}{urlPath}";
+
+                var response = await _httpClient.PostAsync(apiUrl, null);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return ServiceResult<string>.SuccessResult("Solicitação enviada com sucesso!");
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Falha na solicitação de reset. Status: {response.StatusCode}, Resposta: {response.Headers}");
+
+                return ServiceResult<string>.ErrorResult(errorContent, (int)response.StatusCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao processar esqueci minha senha.");
+
+                return ServiceResult<string>.ErrorResult("Ocorreu um erro ao processar a solicitação.");
             }
         }
 
