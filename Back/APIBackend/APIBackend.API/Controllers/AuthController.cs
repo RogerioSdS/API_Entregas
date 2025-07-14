@@ -73,7 +73,7 @@ namespace APIBackend.API.Controllers
 
         [HttpPost("loginByRefreshToken")]
         [AllowAnonymous]
-        public async Task<IActionResult> LoginRefreshToken([FromBody] RefreshTokenRequestDTO model)
+        public async Task<IActionResult> LoginRefreshToken()
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 

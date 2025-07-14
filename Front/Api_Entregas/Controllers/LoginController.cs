@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Api_Entregas.ViewModels;
 using Api_Entregas.Services.Interfaces;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api_Entregas.Controllers
 {
@@ -25,7 +26,7 @@ namespace Api_Entregas.Controllers
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -33,16 +34,10 @@ namespace Api_Entregas.Controllers
                 _logger.LogWarning("Login inválido: ModelState com erro.");
                 return View(model); // volta para a mesma página com os erros
             }
+            // Simula sucesso
+            _sessionService.SetUserData(new SignInViewModel { SignIn = true });
 
-            var result = await _authService.LoginAsync(model);
-
-            if (result.Success)
-            {
-                _sessionService.SetUserData(new SignInViewModel { SignIn = true });
-                return RedirectToAction("Index", "Home");
-            }
-
-            return View("/Views/Shared/Error.cshtml", new ErrorViewModel { RequestId = result.ErrorMessage });
+            return Json(new { redirectUrl = Url.Action("Index", "Home") });
         }
 
         [HttpGet("Register")]
@@ -155,6 +150,28 @@ namespace Api_Entregas.Controllers
 
             return Json(new { message = "Logout realizado com sucesso!" });
         }
+
+        [HttpPost("loginByRefreshToken")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginRefreshToken()
+        {
+            var result = await _authService.LoginByRefreshTokenAsync();
+
+            if (!result.Success)
+            {
+                Response.StatusCode = result.StatusCode;
+
+                if (result.StatusCode == 401)
+                {
+                    Response.Headers["Token-Error"] = "refresh-expired";
+                }
+
+                return Json(new { message = result.ErrorMessage });
+            }
+
+            return Json(new { message = "Token renovado com sucesso!" });
+        }
+
 
         [HttpGet("Error")]
         public IActionResult Error(ErrorViewModel model)

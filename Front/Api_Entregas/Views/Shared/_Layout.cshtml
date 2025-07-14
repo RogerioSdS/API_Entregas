@@ -34,7 +34,7 @@
         var userDataJson = Context.Session.GetString("UserData");
         Console.WriteLine(userDataJson);
         var user = !string.IsNullOrEmpty(userDataJson)
-        ? JsonConvert.DeserializeObject<dynamic>(userDataJson)
+        ? JsonConvert.DeserializeObject<SignInViewModel>(userDataJson)
         : null;
         var isLoggedIn = user != null && user.SignIn == true;
     }
