@@ -73,7 +73,7 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(1),
+            expires: DateTime.Now.AddMinutes(15),
             signingCredentials: creds);
 
         return await Task.Run(() => new JwtSecurityTokenHandler().WriteToken(token));

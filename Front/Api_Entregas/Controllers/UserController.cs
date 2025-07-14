@@ -19,6 +19,7 @@ namespace Api_Entregas.Controllers
             _logger = logger;
         }
 
+        [HttpGet]
         public IActionResult Perfil()
         {
             return View();

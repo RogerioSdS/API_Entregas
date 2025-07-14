@@ -12,9 +12,11 @@ namespace Api_Entregas.Services.Implementations
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _configuration;
         private readonly ILogger<AuthService> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<AuthService> logger)
+        public AuthService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<AuthService> logger, IHttpContextAccessor httpContextAccessor)
         {
+            _httpContextAccessor = httpContextAccessor;
             _httpClient = httpClientFactory.CreateClient();
             _configuration = configuration;
             _logger = logger;
@@ -32,6 +34,19 @@ namespace Api_Entregas.Services.Implementations
                 _logger.LogInformation($"Fazendo requisição para {apiUrl}");
 
                 var response = await _httpClient.PostAsync(apiUrl, content);
+
+                //Testando o Set-Cookie
+                if (response.Headers.TryGetValues("Set-Cookie", out var setCookies))
+                {
+                    foreach (var cookie in setCookies)
+                    {
+                        Console.WriteLine("Cookie recebido da API: " + cookie);
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Nenhum Set-Cookie recebido da API.");
+                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -78,6 +93,45 @@ namespace Api_Entregas.Services.Implementations
                 return ServiceResult<string>.ErrorResult("Ocorreu um erro ao processar a solicitação.");
             }
         }
+
+        public async Task<ServiceResult<string>> LoginByRefreshTokenAsync()
+        {
+            try
+            {
+                var urlPath = "/loginByRefreshToken";
+                string apiUrl = $"{_configuration["ApiBackendSettings:AuthUrl"]}{urlPath}";
+
+                // Recupera o cookie refresh_token do contexto HTTP
+                var refreshToken = _httpContextAccessor.HttpContext?.Request.Cookies["refresh_token"];
+
+                if (string.IsNullOrEmpty(refreshToken))
+                {
+                    return ServiceResult<string>.ErrorResult("Refresh token não encontrado no cookie.", 401);
+                }
+
+                // Cria a requisição manualmente para adicionar o cookie
+                var request = new HttpRequestMessage(HttpMethod.Post, apiUrl);
+                request.Headers.Add("Cookie", $"refresh_token={refreshToken}");
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return ServiceResult<string>.SuccessResult("Token renovado com sucesso!");
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _logger.LogWarning($"Falha na solicitação de refresh. Status: {response.StatusCode}, Resposta: {errorContent}");
+
+                return ServiceResult<string>.ErrorResult(errorContent, (int)response.StatusCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Erro ao tentar renovar o token.");
+                return ServiceResult<string>.ErrorResult("Ocorreu um erro ao tentar renovar o token.");
+            }
+        }
+
 
         public Task<ServiceResult<UserViewModel?>> GetUserAsync(LoginViewModel model)
         {

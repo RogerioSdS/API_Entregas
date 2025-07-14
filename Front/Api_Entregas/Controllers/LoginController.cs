@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Api_Entregas.ViewModels;
 using Api_Entregas.Services.Interfaces;
 using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api_Entregas.Controllers
 {
@@ -19,13 +20,13 @@ namespace Api_Entregas.Controllers
             _sessionService = sessionService;
         }
 
-        [HttpGet]
+        [HttpGet("login")]
         public IActionResult Login()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -33,16 +34,10 @@ namespace Api_Entregas.Controllers
                 _logger.LogWarning("Login inválido: ModelState com erro.");
                 return View(model); // volta para a mesma página com os erros
             }
+            // Simula sucesso
+            _sessionService.SetUserData(new SignInViewModel { SignIn = true });
 
-            var result = await _authService.LoginAsync(model);
-
-            if (result.Success)
-            {
-                _sessionService.SetUserData(new SignInViewModel { SignIn = true });
-                return RedirectToAction("Index", "Home");
-            }
-
-            return View("/Views/Shared/Error.cshtml", new ErrorViewModel { RequestId = result.ErrorMessage });
+            return Json(new { redirectUrl = Url.Action("Index", "Home") });
         }
 
         [HttpGet("Register")]
@@ -137,24 +132,32 @@ namespace Api_Entregas.Controllers
         [HttpPost("Logout")]
         public async Task<IActionResult> LogOff()
         {
-            var logoutResult = await _authService.LogoutAsync();
-
-            if (!logoutResult.Success)
-            {
-                // Supondo que você guardou o status code e mensagem no ServiceResult
-                Response.StatusCode = logoutResult.StatusCode;
-
-                // Repassa o header Token-Error para o navegador
-                if (logoutResult.StatusCode == 401)
-                {
-                    Response.Headers["Token-Error"] = "expired";
-                }
-
-                return Json(new { message = logoutResult.ErrorMessage });
-            }
+            _sessionService.ClearUserData();
 
             return Json(new { message = "Logout realizado com sucesso!" });
         }
+
+        [HttpPost("loginByRefreshToken")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginRefreshToken()
+        {
+            var result = await _authService.LoginByRefreshTokenAsync();
+
+            if (!result.Success)
+            {
+                Response.StatusCode = result.StatusCode;
+
+                if (result.StatusCode == 401)
+                {
+                    Response.Headers["Token-Error"] = "refresh-expired";
+                }
+
+                return Json(new { message = result.ErrorMessage });
+            }
+
+            return Json(new { message = "Token renovado com sucesso!" });
+        }
+
 
         [HttpGet("Error")]
         public IActionResult Error(ErrorViewModel model)

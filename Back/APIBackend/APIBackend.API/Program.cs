@@ -177,7 +177,8 @@ builder.Services.AddCors(options =>
         corsBuilder.WithOrigins(builder.Configuration["CORS:APPUrl"])
                    .AllowAnyMethod()
                    .AllowAnyHeader()
-                   .AllowCredentials(); // 👈 IMPORTANTE
+                   .AllowCredentials() // 👈 IMPORTANTE
+                   .WithExposedHeaders("Token-Error"); // 👈 necessario para expor os erros retornados na header do CORS
     });
 });
 

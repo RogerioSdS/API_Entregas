@@ -5,12 +5,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Configurar HttpClient
 builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
 
 // Serviços MVC
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(); // Opcional, se usar páginas Razor
 
-// Registrar serviços personalizados da camada de serviço
+// Registrar serviços personalizados da camada de serviço   
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 // O HttpContextAccessor é um serviço que permite acessar o contexto HTTP da requisição

@@ -73,7 +73,7 @@ namespace APIBackend.API.Controllers
 
         [HttpPost("loginByRefreshToken")]
         [AllowAnonymous]
-        public async Task<IActionResult> LoginRefreshToken([FromBody] RefreshTokenRequestDTO model)
+        public async Task<IActionResult> LoginRefreshToken()
         {
             if (!ModelState.IsValid) { return BadRequest(ModelState); }
 
@@ -164,20 +164,14 @@ namespace APIBackend.API.Controllers
                 var result = await _authService.ConfirmEmailAsync(email, token);
                 if (!result)
                 {
-                    Console.WriteLine($"Erro ao confirmar token: {token}");
-
                     _loggerNLog.Info($"Token invalido para confirmar o e-mail: {email}");
                     return BadRequest("Token inválido.");
                 }
-
-                Console.WriteLine($"Confirmando e-mail: {email}");
 
                 return Ok("Email confirmado com sucesso.");
             }
             catch (System.Exception)
             {
-                Console.WriteLine($"Erro ao confirmar e-mail: {email}");
-
                 return BadRequest("Erro ao confirmar o e-mail.");
             }
         }
@@ -210,20 +204,15 @@ namespace APIBackend.API.Controllers
                 var result = await _authService.ConfirmResetPasswordAsync(email, token, newPassword);
                 if (!result)
                 {
-                    Console.WriteLine($"Erro ao confirmar token: {token}");
                     _loggerNLog.Info($"Token invalido para redefinir a senha do e-mail: {email}");
 
                     return BadRequest("Token inválido.");
                 }
 
-                Console.WriteLine($"Redefinindo senha para o e-mail: {email}");
-
                 return Ok("Senha redefinida com sucesso.");
             }
             catch (System.Exception)
             {
-                Console.WriteLine($"Erro ao redefinir senha para o e-mail: {email}");
-
                 return BadRequest("Erro ao redefinir a senha.");
             }
         }
@@ -239,22 +228,19 @@ namespace APIBackend.API.Controllers
             // Lê o refresh token diretamente do cookie
             var refreshToken = Request.Cookies["refresh_token"];
 
-            Console.WriteLine("Refresh token: " + refreshToken);
-
             if (string.IsNullOrEmpty(refreshToken))
             {
                 return BadRequest("Nenhum refresh token encontrado.");
             }
 
             var foundRefreshToken = await _authService.GetTokenByRefreshTokenAsync(refreshToken);
-            Console.WriteLine("Found refresh token: " + foundRefreshToken.Id);
+
             if (foundRefreshToken == null)
             {
                 return BadRequest("Refresh token inválido.");
             }
 
             await _authService.RevokeRefreshTokenAsync(foundRefreshToken.Id);
-            Console.WriteLine("Refresh token revogado: " + foundRefreshToken.Id);
 
             return Ok(new { message = "Logout realizado com sucesso" });
         }
