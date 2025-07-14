@@ -1,4 +1,4 @@
-﻿@using Api_Entregas.ViewModels
+@using Api_Entregas.ViewModels
 @model LoginViewModel
 
 @{
@@ -15,14 +15,16 @@
             <div class="modal-content border-0 bg-transparent">
                 <div class="modal-body p-0">
                     <div class="card-login">
-                        <form id="loginForm">
+                        @* Formulário tradicional *@
+                        <form asp-action="Login" asp-controller="Login" method="post">
                             <div class="form-group">
-                                <input name="Email" id="Email" class="form-control" placeholder="Email ID" required />
+                                <input asp-for="Email" class="form-control" placeholder="Email ID" required />
+                                <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
 
                             <div class="form-group">
-                                <input name="Password" id="Password" class="form-control" placeholder="Password" type="password"
-                                    required />
+                                <input asp-for="Password" class="form-control" placeholder="Password" type="password" required />
+                                <span asp-validation-for="Password" class="text-danger"></span>
                             </div>
 
                             <input type="hidden" name="actionDemanded" value="@ViewBag.ActionDemanded" />
@@ -32,11 +34,10 @@
                                     <input type="checkbox" class="form-check-input" id="rememberMe" />
                                     <label class="form-check-label" for="rememberMe">Remember me</label>
                                 </div>
-                                <a class="text-info" asp-controller="Login" asp-action="ForgotPassword">Esqueceu a
-                                    senha?</a>
+                                <a class="text-info" asp-controller="Login" asp-action="ForgotPassword">Esqueceu a senha?</a>
                             </div>
 
-                            <button type="submit" id="loginButton" class="btn btn-login">LOGIN</button>
+                            <button type="submit" class="btn btn-login">LOGIN</button>
                         </form>
 
                         <div class="text-center mt-3">
@@ -56,23 +57,24 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="~/js/toastr.min.js" asp-append-version="true"></script>
 
-    @section Scripts {
-    <script type="module" src="~/js/Login/index.js" asp-append-version="true"></script>
-}
-    
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <text>toastr.success('@TempData["SuccessMessage"]');</text>
-    }
+    <!-- Script inline para mensagens iniciais -->
+    <script>
+        $(document).ready(function () {
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>toastr.success('@TempData["SuccessMessage"]');</text>
+            }
 
-    @if (!ViewData.ModelState.IsValid)
-    {
-        foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-        {
-            <text>toastr.error('@error.ErrorMessage');</text>
-        }
-    }
+            @if (!ViewData.ModelState.IsValid)
+            {
+                foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <text>toastr.error('@error.ErrorMessage');</text>
+                }
+            }
+
+            // Se quiser mostrar o modal automaticamente
+            $('#loginModal').modal('show');
+        });
     </script>
 </body>
-
-

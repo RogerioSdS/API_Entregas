@@ -7,6 +7,8 @@ namespace Api_Entregas.Services.Interfaces;
     public interface IAuthService
     {
         Task<ServiceResult<SignInViewModel>> LoginAsync(LoginViewModel model);
+        Task<ServiceResult<string>> LogoutAsync();
+        Task<ServiceResult<string>> LoginByRefreshTokenAsync();
         Task<ServiceResult<UserViewModel?>> GetUserAsync(LoginViewModel model);
         Task<ServiceResult<SignInViewModel>> RegisterAsync(RegisterViewModel model);
         Task<ServiceResult<string>> ForgotPasswordAsync(ForgotPasswordViewModel model);

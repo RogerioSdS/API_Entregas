@@ -1,5 +1,6 @@
 ﻿@using Api_Entregas.ViewModels
-@model SignInViewModel 
+@using Newtonsoft.Json
+@model SignInViewModel
 
 
 
@@ -27,49 +28,70 @@
 </head>
 
 <body>
-      <img src="~/images/pedagogisa_logo1.png" class="formbold-form-logo">
-    
-    
+    <img src="~/images/pedagogisa_logo1.png" class="formbold-form-logo">
+
     @{
-        var userDataJson = Context.Session.GetString("Logado");
+        var userDataJson = Context.Session.GetString("UserData");
+        Console.WriteLine(userDataJson);
+        var user = !string.IsNullOrEmpty(userDataJson)
+        ? JsonConvert.DeserializeObject<SignInViewModel>(userDataJson)
+        : null;
+        var isLoggedIn = user != null && user.SignIn == true;
     }
 
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">             
+            <div class="container-fluid">
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
+
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        @if (!string.IsNullOrEmpty(userDataJson))
+                        @if (isLoggedIn)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Dashboard" asp-action="Dashboard">Financeiro</a>
+                                <a class="nav-link text-dark" asp-controller="Dashboard"
+                                    asp-action="Dashboard">Financeiro</a>
                             </li>
                         }
                     </ul>
 
-                    <div class="navbar-nav justify-content-end">
-                        <a class="btn btn-login d-block mx-2" asp-controller="Login" asp-action="Login">Login</a>
-                    </div>
+                    <ul class="navbar-nav flex-grow-1"></ul>
+                    @if (!isLoggedIn)
+                    {
+                        <h3 class="navbar-brand">Desconectado!</h3>
+                        <div class="navbar-nav justify-content-end">
+                            <a class="btn btn-login d-block mx-2" asp-controller="Login" asp-action="Login">Login</a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="navbar-nav justify-content-end">
+                            <a class="btn btn-login d-block mx-2" asp-controller="Login" asp-action="Logout">Logout</a>
+                            <a class="btn btn-login d-block mx-2" id="perfilButton">Perfil</a>
+                        </div>
+                    }
+                    </ul>
+
                 </div>
             </div>
         </nav>
     </header>
-    
+
     <main role="main" class="pb-3">
         @RenderBody()
     </main>
-   
+
 
     <footer class="footer">
         <div class="container text-center">
             <img src="~/images/pedagogisa_sem_fundo.png" alt="Logo Rodapé" class="logo-bottom" />
             <div>&copy; 2025 - Api_Entregas - <a asp-controller="Home" asp-action="Privacy">Privacy</a></div>
+            <script src="/_framework/aspnetcore-browser-refresh.js"></script>            
         </div>
     </footer>
 

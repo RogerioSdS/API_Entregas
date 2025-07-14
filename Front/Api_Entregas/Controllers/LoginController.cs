@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Api_Entregas.ViewModels;
 using Api_Entregas.Services.Interfaces;
+using System.Text.Json.Nodes;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Api_Entregas.Controllers
 {
@@ -9,40 +11,33 @@ namespace Api_Entregas.Controllers
     {
         private readonly ILogger<LoginController> _logger;
         private readonly IAuthService _authService;
+        private readonly ISessionService _sessionService;
 
-        public LoginController(ILogger<LoginController> logger, IAuthService authService)
+        public LoginController(ILogger<LoginController> logger, IAuthService authService, ISessionService sessionService)
         {
             _logger = logger;
             _authService = authService;
+            _sessionService = sessionService;
         }
 
-        [HttpGet]
+        [HttpGet("login")]
         public IActionResult Login()
         {
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model) 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
                 _logger.LogWarning("Login inválido: ModelState com erro.");
                 return View(model); // volta para a mesma página com os erros
             }
+            // Simula sucesso
+            _sessionService.SetUserData(new SignInViewModel { SignIn = true });
 
-            var result = await _authService.LoginAsync(model);
-
-            if (result.Success)
-            {
-                HttpContext.Session.SetString("Logado", "true");
-                // Redirecionar para uma página segura após login
-                return RedirectToAction("Index", "Home");
-            }
-
-            // Adiciona erro no ModelState para exibir na View
-            ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Erro ao fazer login.");
-            return View(model); // volta para o form com mensagem de erro
+            return Json(new { redirectUrl = Url.Action("Index", "Home") });
         }
 
         [HttpGet("Register")]
@@ -64,11 +59,11 @@ namespace Api_Entregas.Controllers
             if (result.Success)
             {
                 _logger.LogInformation("Registro bem-sucedido.");
-                return Json(new 
-                { 
+                return Json(new
+                {
                     success = true,
                     message = "Usuário registrado com sucesso!",
-                    accessToken = result.Data.Token, 
+                    accessToken = result.Data.Token,
                     refreshToken = result.Data.RefreshToken,
                     refreshTokenExpiresAt = result.Data.RefreshTokenExpiresAt
                 });
@@ -117,23 +112,52 @@ namespace Api_Entregas.Controllers
         {
             return View();
         }
-/*
-        [HttpPost("RefreshToken")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenViewModel model)
-        {
-            // Implementar lógica de refresh token se necessário
-            // Por enquanto, apenas um placeholder
-            return Json(new { success = false, error = "RefreshToken não implementado ainda." });
-        }
-        */ 
+        /*
+                [HttpPost("RefreshToken")]
+                public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenViewModel model)
+                {
+                    // Implementar lógica de refresh token se necessário
+                    // Por enquanto, apenas um placeholder
+                    return Json(new { success = false, error = "RefreshToken não implementado ainda." });
+                }
+                */
 
-        [HttpPost("Logout")]
+        [HttpGet("Logout")]
         public IActionResult Logout()
         {
             // Para JWT, o logout é feito no frontend removendo o token
             // Aqui você pode implementar blacklist do token se necessário
-            return Json(new { success = true, message = "Logout realizado com sucesso." });
+            return View();
         }
+        [HttpPost("Logout")]
+        public async Task<IActionResult> LogOff()
+        {
+            _sessionService.ClearUserData();
+
+            return Json(new { message = "Logout realizado com sucesso!" });
+        }
+
+        [HttpPost("loginByRefreshToken")]
+        [AllowAnonymous]
+        public async Task<IActionResult> LoginRefreshToken()
+        {
+            var result = await _authService.LoginByRefreshTokenAsync();
+
+            if (!result.Success)
+            {
+                Response.StatusCode = result.StatusCode;
+
+                if (result.StatusCode == 401)
+                {
+                    Response.Headers["Token-Error"] = "refresh-expired";
+                }
+
+                return Json(new { message = result.ErrorMessage });
+            }
+
+            return Json(new { message = "Token renovado com sucesso!" });
+        }
+
 
         [HttpGet("Error")]
         public IActionResult Error(ErrorViewModel model)

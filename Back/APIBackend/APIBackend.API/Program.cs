@@ -123,6 +123,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
+
 .AddJwtBearer(options =>
 {
     options.Events = new JwtBearerEvents
@@ -135,7 +136,24 @@ builder.Services.AddAuthentication(options =>
                 context.Token = accessToken;
             }
             return Task.CompletedTask;
+        },
+        OnAuthenticationFailed = context =>
+        {
+            if (context.Exception is SecurityTokenExpiredException)
+            {
+                context.Response.StatusCode = 402;
+                context.Response.Headers.Append("Token-Error", "expired");
+
+                // Interrompe o pipeline do JWT
+                context.NoResult();
+
+                // Escreve uma mensagem no corpo (opcional)
+                return context.Response.WriteAsync("Token expirado.");
+            }
+
+            return Task.CompletedTask;
         }
+
     };
 
     options.TokenValidationParameters = new TokenValidationParameters
@@ -159,7 +177,8 @@ builder.Services.AddCors(options =>
         corsBuilder.WithOrigins(builder.Configuration["CORS:APPUrl"])
                    .AllowAnyMethod()
                    .AllowAnyHeader()
-                   .AllowCredentials(); // 👈 IMPORTANTE
+                   .AllowCredentials() // 👈 IMPORTANTE
+                   .WithExposedHeaders("Token-Error"); // 👈 necessario para expor os erros retornados na header do CORS
     });
 });
 
