@@ -1,28 +1,40 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
+using Api_Entregas.Services.Implementations;
+using Api_Entregas.Services.Interfaces;
+using Api_Entregas.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Api_Entregas.Controllers
 {
     [Route("[controller]")]
     public class UserController : Controller
     {
-        private readonly ILogger<UserController> _logger;
+        private readonly ISessionService _sessionService;
 
-        public UserController(ILogger<UserController> logger)
+        public UserController(ISessionService sessionService)
         {
-            _logger = logger;
+            _sessionService = sessionService;
         }
 
-        [HttpGet]
+        // GET: /User/Perfil
+        [HttpGet("perfil")]
         public IActionResult Perfil()
         {
-            return View();
+            var json = HttpContext.Session.GetString("UserData");
+            if (json == null) return RedirectToAction("Error");
+
+            var model = JsonConvert.DeserializeObject<UserViewModel>(json);
+            return View("/Views/User/Perfil.cshtml", model); // View está em Views/User/Perfil.cshtml
+        }
+
+        // POST: /User/PerfilPost
+        [HttpPost("perfil")]
+        public IActionResult PerfilPost([FromBody] UserViewModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest();
+
+            _sessionService.SetUserData("UserData", model); 
+            return Ok(); // Apenas confirma
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

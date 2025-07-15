@@ -5,9 +5,9 @@ namespace Api_Entregas.Services.Interfaces;
 
 public interface ISessionService
 {
-    void SetUserData(SignInViewModel userData);
-    SignInViewModel GetUserData();
-    void ClearUserData();
-    bool IsLoggedIn();
+    void SetUserData<T>(string context,T userData);
+    public T? GetUserData<T>(string context);
+    void ClearUserData(string context);
+    bool IsLoggedIn(string context);
 }
 
