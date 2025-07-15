@@ -137,23 +137,21 @@ builder.Services.AddAuthentication(options =>
             }
             return Task.CompletedTask;
         },
-        OnAuthenticationFailed = context =>
+        
+        OnChallenge = context =>
         {
-            if (context.Exception is SecurityTokenExpiredException)
+            var errorDescription = context.ErrorDescription;
+
+            if (errorDescription?.Contains("expired", StringComparison.OrdinalIgnoreCase) == true)
             {
                 context.Response.StatusCode = 402;
                 context.Response.Headers.Append("Token-Error", "expired");
-
-                // Interrompe o pipeline do JWT
-                context.NoResult();
-
-                // Escreve uma mensagem no corpo (opcional)
-                return context.Response.WriteAsync("Token expirado.");
+                context.HandleResponse(); // Evita resposta padrão 401
+                return context.Response.WriteAsync("Token expirado (OnChallenge).");
             }
 
             return Task.CompletedTask;
         }
-
     };
 
     options.TokenValidationParameters = new TokenValidationParameters
@@ -161,6 +159,7 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero, // sem tolerância de 5 min
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
