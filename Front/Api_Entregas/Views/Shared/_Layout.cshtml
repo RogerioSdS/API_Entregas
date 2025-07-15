@@ -1,8 +1,4 @@
-﻿@using Api_Entregas.ViewModels
-@using Newtonsoft.Json
-@model SignInViewModel
-
-
+﻿@using Newtonsoft.Json
 
 <!DOCTYPE html>
 <html lang="BR">
@@ -31,10 +27,10 @@
     <img src="~/images/pedagogisa_logo1.png" class="formbold-form-logo">
 
     @{
-        var userDataJson = Context.Session.GetString("UserData");
+        var userDataJson = Context.Session.GetString("UserDataLogin");
         Console.WriteLine(userDataJson);
         var user = !string.IsNullOrEmpty(userDataJson)
-        ? JsonConvert.DeserializeObject<SignInViewModel>(userDataJson)
+        ? JsonConvert.DeserializeObject<dynamic>(userDataJson)
         : null;
         var isLoggedIn = user != null && user.SignIn == true;
     }
@@ -98,6 +94,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script type= "module" src="~/js/perfil/index.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

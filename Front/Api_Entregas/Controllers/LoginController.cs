@@ -35,7 +35,7 @@ namespace Api_Entregas.Controllers
                 return View(model); // volta para a mesma página com os erros
             }
             // Simula sucesso
-            _sessionService.SetUserData(new SignInViewModel { SignIn = true });
+            _sessionService.SetUserData("UserDataLogin",new SignInViewModel { SignIn = true });
 
             return Json(new { redirectUrl = Url.Action("Index", "Home") });
         }
@@ -132,7 +132,7 @@ namespace Api_Entregas.Controllers
         [HttpPost("Logout")]
         public async Task<IActionResult> LogOff()
         {
-            _sessionService.ClearUserData();
+            _sessionService.ClearUserData("UserDataLogin");
 
             return Json(new { message = "Logout realizado com sucesso!" });
         }

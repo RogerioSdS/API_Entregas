@@ -1,41 +1,38 @@
 using Api_Entregas.Services.Interfaces;
-using Api_Entregas.ViewModels;
 using Newtonsoft.Json;
 
 namespace Api_Entregas.Services.Implementations
 {
-     public class SessionService : ISessionService
+    public class SessionService : ISessionService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private const string UserDataKey = "UserData";
 
         public SessionService(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public void SetUserData(SignInViewModel userData)
+        public void SetUserData<T>(string context, T userData)
         {
             var json = JsonConvert.SerializeObject(userData);
-            _httpContextAccessor.HttpContext?.Session.SetString(UserDataKey, json);
+            _httpContextAccessor.HttpContext?.Session.SetString(context, json);
         }
 
-        public SignInViewModel? GetUserData()
+        public T? GetUserData<T>(string context)
         {
-            var sessionData = _httpContextAccessor.HttpContext?.Session.GetString(UserDataKey);
-            return string.IsNullOrWhiteSpace(sessionData) 
-                ? null 
-                : JsonConvert.DeserializeObject<SignInViewModel>(sessionData);
+            var sessionData = _httpContextAccessor.HttpContext?.Session.GetString(context);
+            return sessionData != null ? JsonConvert.DeserializeObject<T>(sessionData) : default;
         }
 
-        public bool IsLoggedIn()
+        public void ClearUserData(string context)
         {
-            return GetUserData() != null;
+            _httpContextAccessor.HttpContext?.Session.Remove(context);
         }
 
-        public void ClearUserData()
+        public bool IsLoggedIn(string context)
         {
-            _httpContextAccessor.HttpContext?.Session.Remove(UserDataKey);
+            var sessionData = _httpContextAccessor.HttpContext?.Session.GetString(context);
+            return !string.IsNullOrEmpty(sessionData);
         }
     }
 }

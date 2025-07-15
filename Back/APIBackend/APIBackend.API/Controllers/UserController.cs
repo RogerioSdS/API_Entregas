@@ -123,10 +123,12 @@ namespace APIBackend.API.Controllers
             return Ok(user);
         }
 
-        [AllowAnonymous]
+        [Authorize]
         [HttpGet("getUserByEmail")]
-        public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
+        public async Task<IActionResult> GetUserByEmail()
         {
+            var email = User.FindFirst(ClaimTypes.Email)?.Value;
+
             if (string.IsNullOrEmpty(email))
             {
                 return BadRequest("Email do usuário deve ser informado.");
