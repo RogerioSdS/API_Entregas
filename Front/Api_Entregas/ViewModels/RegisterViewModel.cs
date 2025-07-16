@@ -20,11 +20,11 @@ namespace Api_Entregas.ViewModels
         public required string ConfirmPassword { get; set; }
         public required string FirstName { get; set; }
         public string? LastName { get; set; }
-        public string? Phone { get; set; }
+        public string? PhoneNumber { get; set; }
         public string Role { get; set; } = "User";
         public string? Address { get; set; }
         public string? Complement { get; set; }
-        public string? Post { get; set; }
+        public string? ZipCode { get; set; }
         public string? City { get; set; }
         public string? Description { get; set; }
         public bool IsBlocked { get; set; } = false;

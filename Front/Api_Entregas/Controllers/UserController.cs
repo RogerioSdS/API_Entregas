@@ -20,6 +20,13 @@ namespace Api_Entregas.Controllers
             _sessionService = sessionService;
         }
 
+         [HttpGet("Register")]
+        public async Task<IActionResult> Register()
+        {
+
+            return View();
+        }
+
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
         {
