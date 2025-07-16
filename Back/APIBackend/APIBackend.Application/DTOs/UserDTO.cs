@@ -16,6 +16,7 @@ public class UserDTO
   //propriedade que serão preenchidas somente quando for completar o cadastro do usuário
   public string? Address { get; set; }
   public string? Complement { get; set; }
+  public string? PhoneNumber { get; set; }
   public string ZipCode { get; set; } = string.Empty;
   public string? City { get; set; }
   public string? Description { get; set; }

@@ -39,39 +39,7 @@ namespace Api_Entregas.Controllers
 
             return Json(new { redirectUrl = Url.Action("Index", "Home") });
         }
-
-        [HttpGet("Register")]
-        public IActionResult Register()
-        {
-            return View();
-        }
-
-        [HttpPost("Register")]
-        public async Task<IActionResult> Register([FromBody] RegisterViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return Json(new { success = false, errors = ModelState });
-            }
-
-            var result = await _authService.RegisterAsync(model);
-
-            if (result.Success)
-            {
-                _logger.LogInformation("Registro bem-sucedido.");
-                return Json(new
-                {
-                    success = true,
-                    message = "Usuário registrado com sucesso!",
-                    accessToken = result.Data.Token,
-                    refreshToken = result.Data.RefreshToken,
-                    refreshTokenExpiresAt = result.Data.RefreshTokenExpiresAt
-                });
-            }
-
-            return Json(new { success = false, error = result.ErrorMessage });
-        }
-
+       
         [HttpGet("ForgotPassword")]
         public IActionResult ForgotPassword()
         {
@@ -106,21 +74,7 @@ namespace Api_Entregas.Controllers
 
             return Json(new { success = false, error = forgotPasswordResult.ErrorMessage });
         }
-
-        [HttpGet("SignIn")]
-        public IActionResult SignIn()
-        {
-            return View();
-        }
-        /*
-                [HttpPost("RefreshToken")]
-                public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenViewModel model)
-                {
-                    // Implementar lógica de refresh token se necessário
-                    // Por enquanto, apenas um placeholder
-                    return Json(new { success = false, error = "RefreshToken não implementado ainda." });
-                }
-                */
+        
 
         [HttpGet("Logout")]
         public IActionResult Logout()

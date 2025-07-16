@@ -2,105 +2,89 @@
 
 @{
     ViewData["Title"] = "Perfil do Usuário";
- }
+}
 
 @section Styles {
     <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
     <script src="~/js/toastr.min.js" asp-append-version="true"></script>
-
 }
 
-<body class="">
-    <div class="formbold-main-wrapper">
-        <div class="formbold-form-wrapper">
-                        <form method="post" asp-action="Perfil" asp-controller="User">
-                            <div class="formbold-form-title">
-                                <h2>Perfil do Usuário</h2>
-                                <p>Edite suas informações de cadastro abaixo.</p>
-                            </div>
+<div class="formbold-main-wrapper">
+    <div class="formbold-form-wrapper">
+        <form id="perfilForm" method="post" asp-action="Perfil" asp-controller="User">
+            <div class="formbold-form-title">
+                <h2>Perfil do Usuário</h2>
+                <p>Edite suas informações de cadastro abaixo.</p>
+            </div>
 
-                            @if (TempData["FormData"] != null)
-                            {
-                                <div class="alert alert-info">
-                                    @TempData["FormData"]
-                                </div>
-                            }
+            @if (TempData["FormData"] != null)
+            {
+                <div class="alert alert-info">
+                    @TempData["FormData"]
+                </div>
+            }
 
-                            <div class="formbold-input-flex">
-                                <div>
-                                    <label class="formbold-form-label">Nome</label>
-                                    <input asp-for="FirstName" class="formbold-form-input" />
-                                </div>
-                                <div>
-                                    <label class="formbold-form-label">Sobrenome</label>
-                                    <input asp-for="LastName" class="formbold-form-input" />
-                                </div>
-                            </div>
-
-                            <div class="formbold-input-flex">
-                                <div>
-                                    <label class="formbold-form-label">Email</label>
-                                    <input asp-for="Email" type="email" class="formbold-form-input" autocomplete="email" />
-                                </div>
-                                <div>
-                                    <label class="formbold-form-label">Telefone</label>
-                                    <input asp-for="PhoneNumber" class="formbold-form-input" type="tel"
-                                           placeholder="(99) 99999-9999"
-                                           pattern="\(\d{2}\) \d{5}-\d{4}" maxlength="16" />
-                                </div>
-                            </div>
-
-                            <div class="formbold-mb-3">
-                                <label class="formbold-form-label">Endereço</label>
-                                <input asp-for="Address" class="formbold-form-input" />
-                            </div>
-
-                            <div class="formbold-mb-3">
-                                <label class="formbold-form-label">Complemento</label>
-                                <input asp-for="Complement" class="formbold-form-input" />
-                            </div>
-
-                            <div class="formbold-input-flex">
-                                <div>
-                                    <label class="formbold-form-label">Cidade</label>
-                                    <input asp-for="City" class="formbold-form-input" />
-                                </div>
-                                <div>
-                                    <label class="formbold-form-label">CEP</label>
-                                    <input asp-for="ZipCode" class="formbold-form-input"
-                                           placeholder="99999-999"
-                                           pattern="\d{5}-\d{3}" maxlength="9" />
-                                </div>
-                            </div>
-
-                            <div class="formbold-mb-3">
-                                <label class="formbold-form-label">Senha</label>
-                                <input asp-for="Password" type="password" class="formbold-form-input" />
-                            </div>
-
-                            <div class="formbold-mb-3">
-                                <label class="formbold-form-label">Confirme a senha</label>
-                                <input type="password" name="ConfirmPassword" id="ConfirmPassword" class="formbold-form-input" />
-                            </div>
-
-                            <div class="formbold-mb-3">
-                                <input type="checkbox" id="termsCheckbox" required />
-                                <label for="termsCheckbox">Aceito os termos de uso</label>
-                            </div>
-
-                            <button type="submit" class="formbold-btn">Salvar Perfil</button>
-                        </form>
-
-                    </div>
+            <div class="formbold-input-flex">
+                <div>
+                    @Html.EditorFor(m => m.FirstName)
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+                <div>
+                    @Html.EditorFor(m => m.LastName)
+                    <span asp-validation-for="LastName" class="text-danger"></span>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Scripts -->
+            <div class="formbold-input-flex">
+                <div>
+                    @Html.EditorFor(m => m.Email)
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+                <div>
+                    @Html.EditorFor(m => m.PhoneNumber)
+                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div>
+                @Html.EditorFor(m => m.Address)
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+
+            <div>
+                @Html.EditorFor(m => m.Complement)
+                <span asp-validation-for="Complement" class="text-danger"></span>
+            </div>
+
+            <div class="formbold-input-flex">
+                <div>
+                    @Html.EditorFor(m => m.City)
+                    <span asp-validation-for="City" class="text-danger"></span>
+                </div>
+                <div>
+                    @Html.EditorFor(m => m.ZipCode)
+                    <span asp-validation-for="ZipCode" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="formbold-mb-3">
+                <input type="checkbox" id="termsCheckbox" required />
+                <label for="termsCheckbox">Aceito os termos de uso</label>
+            </div>
+
+            <button type="submit" id="submitUpdatePerfilButton" class="formbold-btn">Salvar Perfil</button>
+
+            <partial name="_ValidationScriptsPartial" />
+        </form>
+    </div>
+</div>
+
+@section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+    <script type="module" src="~/js/perfil/updatePerfil-api.js?v=@DateTime.Now"></script>
 
     <script>
         $(document).ready(function () {
@@ -116,8 +100,6 @@
                     <text>toastr.error('@error.ErrorMessage');</text>
                 }
             }
-
-            $('#profileModal').modal('show');
         });
     </script>
-</body>
+}

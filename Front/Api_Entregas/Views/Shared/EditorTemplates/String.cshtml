@@ -1,0 +1,11 @@
+@model string
+@{
+    var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName("");
+    var labelText = ViewData.ModelMetadata.DisplayName ?? fullName;
+    var inputType = fullName.ToLower().Contains("email") ? "email" : "text";
+}
+<div class="formbold-mb-3">
+    <label for="@fullName" class="formbold-form-label">@labelText</label>
+    @Html.TextBox("", Model, new { @class = "formbold-form-input", type = inputType, id = fullName, name = fullName, placeholder = "Digite " + labelText + "..." })
+    <span asp-validation-for="@fullName" class="text-danger"></span>
+</div>

@@ -32,5 +32,6 @@
 </body>
 
 @section Scripts {
-    <script type="module" src="~/js/Logout/index.js" asp-append-version="true"></script>
+    @* esse modelo de script abaixo, faz com que a versão seja sempre atualizada, passando como parametro o DateTime.Now.Ticks, não é necessario usar o asp-append-version ou alterar o nome do arquivo em disco *@
+    <script type="module" src="~/js/Logout/index.js?v=@DateTime.Now.Ticks"></script>
 }

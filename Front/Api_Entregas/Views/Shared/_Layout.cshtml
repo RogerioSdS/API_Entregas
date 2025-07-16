@@ -28,7 +28,6 @@
 
     @{
         var userDataJson = Context.Session.GetString("UserDataLogin");
-        Console.WriteLine(userDataJson);
         var user = !string.IsNullOrEmpty(userDataJson)
         ? JsonConvert.DeserializeObject<dynamic>(userDataJson)
         : null;
@@ -94,7 +93,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script type= "module" src="~/js/perfil/index.js"></script>
+    <script type= "module" src="~/js/perfil/index.js?v=@DateTime.Now.Ticks"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
