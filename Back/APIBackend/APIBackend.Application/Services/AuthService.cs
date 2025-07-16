@@ -73,8 +73,10 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(15),
+            expires: DateTime.UtcNow.AddMinutes(0.2),
             signingCredentials: creds);
+
+        Console.WriteLine("Token gerado: " + DateTime.UtcNow + " Token vence: " + token.ValidTo);
 
         return await Task.Run(() => new JwtSecurityTokenHandler().WriteToken(token));
     }
@@ -348,11 +350,12 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
         catch (System.Exception ex)
         {
             throw new Exception("Erro ao validar refresh token: " + ex.Message);
-        }        
+        }
     }
 
     public Task<RefreshToken?> GetTokenByRefreshTokenAsync(string refreshToken)
     {
         return _authRepo.GetTokenByRefreshTokenAsync(refreshToken);
     }
+    
 }

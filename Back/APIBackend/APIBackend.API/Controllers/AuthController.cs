@@ -3,9 +3,6 @@ using APIBackend.Application.Services.Interfaces;
 using APIBackend.Application.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using NLog;
-using APIBackend.Domain.Identity;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace APIBackend.API.Controllers
 {
@@ -101,6 +98,15 @@ namespace APIBackend.API.Controllers
 
             var userWithRoles = await _authService.GetUserRolesAsync(foundUser);
             var token = await _authService.GenerateJwtTokenAsync(userWithRoles);
+
+              var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None, // 👈 Obrigatório para cross-site
+                Expires = DateTime.UtcNow.AddMinutes(15)
+            };
+            Response.Cookies.Append("access_token", token, cookieOptions);
 
             return Ok(new { message = "Login realizado com sucesso" });
         }

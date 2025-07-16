@@ -6,16 +6,10 @@ namespace APIBackend.Domain.Identity;
 
 public class User : IdentityUser<int>
 {
-    [DataType(DataType.EmailAddress)]
-    [EmailAddress(ErrorMessage = "Invalid email format.")]
-    public override string? Email { get; set; } // Sobrescreve a propriedade da classe base
-    [NotMapped]// Ignora no banco de dados
-    [DataType(DataType.Password)]
     public required string Password { get; set; }
     public required string FirstName { get; set; }
     public string? LastName { get; set; }
     public string? Address { get; set; }
-    public string? FoneNumber { get; set; }
     public DateTime Created {get; set; } = DateTime.Now;
     public DateTime Modified {get; set; } = DateTime.Now;    
     public string? Complement { get; set; }

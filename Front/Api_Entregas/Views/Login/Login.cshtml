@@ -41,7 +41,7 @@
 
                         <div class="text-center mt-3">
                             <small class="text-muted">Ainda não tem cadastro?
-                                <a class="text-info" asp-controller="Login" asp-action="Register">Inscreva-se</a>
+                                <a class="text-info" asp-controller="User" asp-action="Register">Inscreva-se</a>
                             </small>
                         </div>
                     </div>
@@ -57,7 +57,8 @@
     <script src="~/js/toastr.min.js" asp-append-version="true"></script>
 
     @section Scripts {
-    <script type="module" src="~/js/Login/index.js" asp-append-version="true"></script>
+    @* esse modelo de script abaixo, faz com que a versão seja sempre atualizada, passando como parametro o DateTime.Now.Ticks, não é necessario usar o asp-append-version ou alterar o nome do arquivo em disco *@
+    <script type="module" src="~/js/Login/index.js?v=@DateTime.Now.Ticks" asp-append-version="true"></script>
 }
     
     @if (TempData["SuccessMessage"] != null)

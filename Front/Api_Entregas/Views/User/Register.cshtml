@@ -1,20 +1,23 @@
-@model Api_Entregas.ViewModels.UserViewModel
+@using Api_Entregas.ViewModels
+@model RegisterViewModel
 
 @{
-    ViewData["Title"] = "Perfil do Usuário";
+    ViewData["Title"] = "Pagina de Cadastro";
 }
 
-@section Styles {
+@section Styles{    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
     <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
-    <script src="~/js/toastr.min.js" asp-append-version="true"></script>
-}
+    <link rel="stylesheet" href="~/css/toastr.min.css" asp-append-version="true" />
+    }
 
 <div class="formbold-main-wrapper">
     <div class="formbold-form-wrapper">
         <form id="perfilForm" method="post" asp-action="Perfil" asp-controller="User">
             <div class="formbold-form-title">
                 <h2>Perfil do Usuário</h2>
-                <p>Edite suas informações de cadastro abaixo.</p>
+                <p>Insira suas informações de cadastro abaixo.</p>
             </div>
 
             @if (TempData["FormData"] != null)
@@ -84,7 +87,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script src="~/js/toastr.min.js"></script>
-    <script type="module" src="~/js/perfil/updatePerfil-api.js?v=@DateTime.Now"></script>
+    <script type="module" src="~/js/register/index.js?v=@DateTime.Now"></script>
 
     <script>
         $(document).ready(function () {
