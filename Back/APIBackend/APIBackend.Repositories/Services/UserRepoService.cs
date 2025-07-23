@@ -78,7 +78,7 @@ public class UserRepoService : IUserRepo
 
     public async Task<User> GetUserByEmailAsync(string email)
     {
-        return await _userManager.Users.FirstOrDefaultAsync(u => u.Email == email) ?? throw new Exception("Usuário não encontrado.");
+        return await _userManager.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
     public async Task<User> GetUserByIdAsync(int id)
     {

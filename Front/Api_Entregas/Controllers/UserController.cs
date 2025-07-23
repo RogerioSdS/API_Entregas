@@ -69,16 +69,24 @@ namespace Api_Entregas.Controllers
         [HttpPost("perfil")]
         public IActionResult PerfilPost([FromBody] UserViewModel model)
         {
-            if (!ModelState.IsValid) return BadRequest();
+            if (!ModelState.IsValid)
+
+            {
+                {
+                    var allErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                    // Logar, ou retornar no response:
+                    return View("Error", new ErrorViewModel {RequestId = "true", ErrorMsg = allErrors.FirstOrDefault() });
+                }
+            }
 
             _sessionService.SetUserData("UserData", model); 
             return Ok(); // Apenas confirma
         }        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public IActionResult Error(string erro)
         {
-            return View("Error!");
+            return View("Error", new ErrorViewModel { RequestId = erro });
         }
     }
 }

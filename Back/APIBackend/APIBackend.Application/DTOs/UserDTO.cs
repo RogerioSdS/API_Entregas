@@ -12,7 +12,7 @@ public class UserDTO
   public required string Password { get; set; }
   public required string FirstName { get; set; }
   public string? LastName { get; set; }
-  public string Role { get; set; } = "Admin";
+  public string Role { get; set; } = "User";
   //propriedade que serão preenchidas somente quando for completar o cadastro do usuário
   public string? Address { get; set; }
   public string? Complement { get; set; }
