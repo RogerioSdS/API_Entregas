@@ -155,6 +155,36 @@ namespace APIBackend.API.Controllers
             }
         }
 
+        [HttpGet("getCheckUserByEmail")]
+        public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
+        {
+
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("Email do usuário deve ser informado.");
+            }
+
+            try
+            {
+                var user = await _userService.GetUserByEmailAsync(email);
+                if (user == null)
+                {
+                    return NotFound("Usuário não encontrado.");
+                }
+
+                return Ok(user);
+            }   
+            catch (ArgumentNullException ex)
+            {
+                return BadRequest($"Erro ao buscar usuário, email inválido: {email}");
+            }
+            catch (Exception ex)
+            {
+                _loggerNLog.Error(ex, $"Erro ao buscar usuário com email: {email}");
+                return StatusCode(500, "Erro interno ao buscar usuário.");
+            }
+        }
+
         [HttpPut("UpdateUserDetails")]
         public async Task<IActionResult> UpdateUserDetails([FromBody] UserUpdateFromUserDTO model)
         {

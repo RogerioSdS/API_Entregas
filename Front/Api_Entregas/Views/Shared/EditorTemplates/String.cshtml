@@ -6,6 +6,6 @@
 }
 <div class="formbold-mb-3">
     <label for="@fullName" class="formbold-form-label">@labelText</label>
-    @Html.TextBox("", Model, new { @class = "formbold-form-input", type = inputType, id = fullName, name = fullName, placeholder = "Digite " + labelText + "..." })
+    @Html.TextBox("", Model, new { @class = "formbold-form-input", type = inputType, id = fullName, name = fullName, placeholder =  labelText })
     <span asp-validation-for="@fullName" class="text-danger"></span>
 </div>

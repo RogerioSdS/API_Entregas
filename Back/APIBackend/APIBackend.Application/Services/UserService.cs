@@ -28,8 +28,12 @@ public class UserService : IUserService
         var user = _mapper.Map<User>(model);
         try
         {
-            await VerifyRoleIsPermitedAsync(user.Role);            
-            user.UserName = user.FirstName + user.LastName + DateTime.Now.Millisecond; // Gerar username único           
+            await VerifyRoleIsPermitedAsync(user.Role);
+            string nome = (user.FirstName + user.LastName)
+                .Replace(" ", "")  // remove TODOS os espaços
+                .ToLowerInvariant(); // opcional: tudo minúsculo
+
+            user.UserName = nome + DateTime.Now.Millisecond;      
             var createdUser = await _userRepository.AddUserAsync(user);
 
             if (user.SignInAfterCreation) //logar o cliente quando realizar o cadastro
@@ -58,16 +62,16 @@ public class UserService : IUserService
 
     public async Task<UserDTO> GetUserByEmailAsync(string email)
     {
-        var user = await _userRepository.GetUserByEmailAsync(email);      
+        var user = await _userRepository.GetUserByEmailAsync(email);
 
         return _mapper.Map<UserDTO>(user);
     }
 
     public async Task<LoginDTO> GetUserByEmailToLoginAsync(string email)
     {
-        var user = await _userRepository.GetUserByEmailAsync(email);      
+        var user = await _userRepository.GetUserByEmailAsync(email);
 
-        return _mapper.Map<LoginDTO>(user);        
+        return _mapper.Map<LoginDTO>(user);
     }
 
     public async Task<UserDTO> GetUserByIdAsync(int id)
@@ -120,7 +124,7 @@ public class UserService : IUserService
             throw new Exception("Usuário não atualizado");
 
         return _mapper.Map<UserUpdateFromUserDTO>(updatedUser);
-    }    
+    }
 
     public async Task<UserUpdateFromAdminDTO> UpdateUserFromAdminAsync(UserUpdateFromAdminDTO userDTO)
     {
@@ -137,7 +141,7 @@ public class UserService : IUserService
 
         // Retornar o DTO mapeado do usuário atualizado
         return _mapper.Map<UserUpdateFromAdminDTO>(updatedUser);
-    }    
+    }
 
     public async Task<bool> DeleteUserAsync(int id)
     {
@@ -153,9 +157,9 @@ public class UserService : IUserService
     {
         var user = _mapper.Map<User>(userDTO);
         return await _userRepository.GetRolesAsync(user);
-    }    
+    }
 
-     public async Task VerifyRoleIsPermitedAsync(string role)
+    public async Task VerifyRoleIsPermitedAsync(string role)
     {
         await Task.Run(() =>
         {
