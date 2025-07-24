@@ -168,7 +168,6 @@ namespace APIBackend.Tests.Controllers
             var userDto = new UserUpdateFromUserDTO
             {
                 Email = "rogerio@rorer.com",
-                Password = _password,
                 FirstName = "Rogerio",
                 LastName = "Soares",
                 Address = "Rua A, 120",
@@ -181,7 +180,6 @@ namespace APIBackend.Tests.Controllers
             var userDtoAtualizado = new UserUpdateFromUserDTO
             {
                 Email = userDto.Email + "update",
-                Password = userDto.Password,
                 FirstName = userDto.FirstName,
                 LastName = userDto.LastName,
                 Address = userDto.Address,
@@ -211,7 +209,6 @@ namespace APIBackend.Tests.Controllers
             var userDto = new UserUpdateFromUserDTO
             {
                 Email = "rogerio@rorer.com",
-                Password = _password,
                 FirstName = "Rogerio",
                 LastName = "Soares",
                 Address = "Rua A, 120",

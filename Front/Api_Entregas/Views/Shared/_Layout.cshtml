@@ -67,7 +67,7 @@
                     {
                         <div class="navbar-nav justify-content-end">
                             <a class="btn btn-login d-block mx-2" asp-controller="Login" asp-action="Logout">Logout</a>
-                            <a class="btn btn-login d-block mx-2" id="perfilButton">Perfil</a>
+                            <a class="btn btn-login d-block mx-2" id="btnPerfil">Perfil</a>
                         </div>
                     }
                     </ul>
@@ -93,7 +93,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script type= "module" src="~/js/perfil/index.js?v=@DateTime.Now.Ticks"></script>
+    <script type="module" src="~/js/menu/index.js?v=@DateTime.Now"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

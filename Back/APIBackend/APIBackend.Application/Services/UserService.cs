@@ -116,7 +116,7 @@ public class UserService : IUserService
         if (userToUpdate == null)
             throw new ArgumentNullException(nameof(userToUpdate), "Usuário não encontrado");
 
-        _mapper.Map(userDTO, userToUpdate);
+        _mapper.Map(userDTO, userToUpdate);        
 
         var updatedUser = await _userRepository.UpdateUserAsync(userToUpdate);
 
