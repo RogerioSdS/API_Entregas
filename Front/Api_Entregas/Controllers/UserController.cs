@@ -53,8 +53,6 @@ namespace Api_Entregas.Controllers
             return Json(new { success = false, error = result.ErrorMessage });
         }
 
-
-        // GET: /User/Perfil
         [HttpGet("perfil")]
         public IActionResult Perfil()
         {
@@ -62,22 +60,13 @@ namespace Api_Entregas.Controllers
             if (json == null) return RedirectToAction("Error");
 
             var model = JsonConvert.DeserializeObject<UserViewModel>(json);
-            return View("/Views/User/Perfil.cshtml", model); // View está em Views/User/Perfil.cshtml
+            return View("/Views/User/Perfil.cshtml", model); 
         }
 
-        // POST: /User/PerfilPost
         [HttpPost("perfil")]
         public IActionResult PerfilPost([FromBody] UserViewModel model)
-        {
-            if (!ModelState.IsValid)
-
-            {
-                {
-                    var allErrors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
-                    // Logar, ou retornar no response:
-                    return View("Error", new ErrorViewModel {RequestId = "true", ErrorMsg = allErrors.FirstOrDefault() });
-                }
-            }
+        {            
+            if (!ModelState.IsValid) return BadRequest();
 
             _sessionService.SetUserData("UserData", model); 
             return Ok(); // Apenas confirma

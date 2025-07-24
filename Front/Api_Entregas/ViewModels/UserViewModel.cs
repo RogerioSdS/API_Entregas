@@ -8,11 +8,8 @@ namespace Api_Entregas.ViewModels
 {
     public class UserViewModel
     {
-        public int Id { get; set; }
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid email format. The email must include a valid domain.")]
         public required string Email { get; set; }
-        [DataType(DataType.Password)]
-        public required string Password { get; set; }
         public required string FirstName { get; set; }
         public string? LastName { get; set; }
         //propriedade que serão preenchidas somente quando for completar o cadastro do usuário
