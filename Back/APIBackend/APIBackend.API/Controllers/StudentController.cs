@@ -48,12 +48,27 @@ namespace APIBackend.API.Controllers
             }
         }
 
-        [HttpGet("getStudents")]
-        public async Task<IActionResult> GetStudents()
+        [HttpGet("getStudentsDetails")]
+        public async Task<IActionResult> GetStudentsDetails()
         {
             var students = await _studentService.GetStudentsAsync();
 
             return Ok(students);
+        }
+
+        [HttpGet("getStudentsNames")]
+        public async Task<IActionResult> GetStudentsNames()
+        {
+            var students = await _studentService.GetStudentsAsync();
+            var studentNames = students
+                .Select(std => new
+                {
+                    std.Id,
+                    std.FirstName,
+                    std.LastName
+                });
+
+            return Ok(studentNames);
         }
 
 

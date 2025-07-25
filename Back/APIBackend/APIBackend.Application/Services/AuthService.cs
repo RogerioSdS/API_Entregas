@@ -73,7 +73,7 @@ public class AuthService(IConfiguration configuration, ApiDbContext refreshToken
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(0.2),
+            expires: DateTime.UtcNow.AddMinutes(60),
             signingCredentials: creds);
 
         Console.WriteLine("Token gerado: " + DateTime.UtcNow + " Token vence: " + token.ValidTo);

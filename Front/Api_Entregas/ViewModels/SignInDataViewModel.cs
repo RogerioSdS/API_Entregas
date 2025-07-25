@@ -5,11 +5,13 @@ using System.Threading.Tasks;
 
 namespace Api_Entregas.ViewModels
 {
-    public class SignInViewModel
+    public class SignInDataViewModel
     {
         public string? Token { get; set; }
         public string? RefreshToken { get; set; }
-        public DateTime? RefreshTokenExpiresAt { get; set; }
+        public DateTime? RefreshTokenExpiresAt { get; set; }        
+        public string? Id { get; set; }
+        public string? Role { get; set; }
         public string? Email { get; set; }
         public DateTime StartSession { get; set; } = DateTime.Now;
         public bool SignIn { get; set; }

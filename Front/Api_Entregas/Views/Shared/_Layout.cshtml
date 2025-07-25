@@ -31,7 +31,8 @@
         var user = !string.IsNullOrEmpty(userDataJson)
         ? JsonConvert.DeserializeObject<dynamic>(userDataJson)
         : null;
-        var isLoggedIn = user != null && user.SignIn == true;
+        var isLoggedIn = user != null && user?.SignIn == true;
+        var isAdmin = user != null && (user.Role == "Admin" || user.Role == "Manager");
     }
 
     <header>
@@ -43,15 +44,44 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
                         @if (isLoggedIn)
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Dashboard"
                                     asp-action="Dashboard">Financeiro</a>
                             </li>
+
+                            if(isAdmin)
+                            {
+                               <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark"
+                                    href="#"
+                                    id="dropdownAluno"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    Aluno
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownAluno">
+                                    <li>
+                                    <a class="dropdown-item" id="" asp-controller="Student" asp-action="GetStudentsNames">
+                                        Listar Alunos
+                                    </a>
+                                    </li>
+                                    <li>
+                                    <a class="dropdown-item" asp-controller="Student" asp-action="BeginCreateStudent">
+                                        Novo Aluno
+                                    </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                    <a class="dropdown-item" asp-controller="Student" asp-action="Relatorio">
+                                        Relatórios
+                                    </a>
+                                    </li>
+                                </ul>
+                                </li>
+                            }
                         }
                     </ul>
 
@@ -85,7 +115,7 @@
     <footer class="footer">
         <div class="container text-center">
             <img src="~/images/pedagogisa_sem_fundo.png" alt="Logo Rodapé" class="logo-bottom" />
-            <div>&copy; 2025 - Api_Entregas - <a asp-controller="Home" asp-action="Privacy">Privacy</a></div>
+            <div>&copy; 2025 - XP Software - Todos os direitos reservados </div>
             <script src="/_framework/aspnetcore-browser-refresh.js"></script>            
         </div>
     </footer>

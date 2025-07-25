@@ -1,0 +1,99 @@
+@model Api_Entregas.ViewModels.StudentViewModel
+
+@{
+    ViewData["Title"] = "Detalhes do aluno";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+    <script src="~/js/toastr.min.js" asp-append-version="true"></script>
+}
+
+<div class="formbold-main-wrapper">
+    <div class="formbold-form-wrapper">
+        <form id="studentPerfilForm" method="post" asp-controller="Student" asp-action="BeginEdit">
+
+            @* Proteção CSRF *@
+            @Html.AntiForgeryToken()
+
+            <div class="formbold-form-title">
+                <h2>Aluno</h2>
+                <p>Detalhes do aluno</p>
+            </div>
+
+            @if (TempData["FormData"] != null)
+            {
+                <div class="alert alert-info">
+                    @TempData["FormData"]
+                </div>
+            }
+
+            @* ========== Campos ocultos para repost no BeginEdit ========== *@
+            @* Poderia tbm ter colocado embaixo de cada campo display *@
+            @Html.HiddenFor(m => m.Id)
+            @Html.HiddenFor(m => m.FirstName)
+            @Html.HiddenFor(m => m.LastName)
+            @Html.HiddenFor(m => m.Email)
+            @Html.HiddenFor(m => m.DateOfBirth)
+            @Html.HiddenFor(m => m.PhoneNumber)
+            @Html.HiddenFor(m => m.ResponsibleId)
+
+            @* ========== Exibição somente leitura ========== *@
+            <div class="mb-3">
+                @Html.LabelFor(m => m.FirstName):
+                <p>@Html.DisplayFor(m => m.FirstName)</p>
+            </div>
+            <div class="mb-3">
+                @Html.LabelFor(m => m.LastName):
+                <p>@Html.DisplayFor(m => m.LastName)</p>
+            </div>
+            <div class="mb-3">
+                @Html.LabelFor(m => m.Email):
+                <p>@Html.DisplayFor(m => m.Email)</p>
+            </div>
+            <div class="mb-3">
+                @Html.LabelFor(m => m.DateOfBirth):
+                <p>@Html.DisplayFor(m => m.DateOfBirth)</p>
+            </div>
+            <div class="mb-3">
+                @Html.LabelFor(m => m.PhoneNumber):
+                <p>@Html.DisplayFor(m => m.PhoneNumber)</p>
+            </div>
+            <div class="mb-3">
+                @Html.LabelFor(m => m.ResponsibleId):
+                <p>@Html.DisplayFor(m => m.ResponsibleId)</p>
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Editar Perfil
+            </button>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            @* Mensagem de sucesso via TempData *@
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <text>toastr.success('@TempData["SuccessMessage"]');</text>
+            }
+
+                @* Mensagens de erro genéricas (caso haja validação no controller) *@
+                @if (!ViewData.ModelState.IsValid)
+                {
+                        foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <text>toastr.error('@error.ErrorMessage');</text>
+                }
+                }
+            });
+    </script>
+}

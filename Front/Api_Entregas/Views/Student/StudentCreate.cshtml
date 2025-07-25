@@ -1,0 +1,93 @@
+@model Api_Entregas.ViewModels.StudentViewModel
+
+@{
+    ViewData["Title"] = "Editar aluno";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+    <script src="~/js/toastr.min.js" asp-append-version="true"></script>
+}
+
+<div class="formbold-main-wrapper">
+    <div class="formbold-form-wrapper">
+        <form id="editStudentForm"
+              method="post"
+              asp-controller="Student"
+              asp-action="EditStudent">
+            
+            @Html.AntiForgeryToken()
+            
+            @Html.HiddenFor(m => m.Id)
+            @Html.HiddenFor(m => m.FirstName)
+            @Html.HiddenFor(m => m.LastName)
+            @Html.HiddenFor(m => m.Email)
+            @Html.HiddenFor(m => m.DateOfBirth)
+            @Html.HiddenFor(m => m.PhoneNumber)
+            @Html.HiddenFor(m => m.ResponsibleId)
+
+            <div class="formbold-form-title">
+                <h2>Aluno</h2>
+                <p>Editar detalhes do aluno</p>
+            </div>
+
+            @if (TempData["FormData"] != null)
+            {
+                <div class="alert alert-info">
+                    @TempData["FormData"]
+                </div>
+            }
+
+            <div class="mb-3">
+                @Html.EditorFor(m => m.FirstName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(m => m.FirstName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-3">
+                @Html.EditorFor(m => m.LastName, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(m => m.LastName, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-3">
+                @Html.EditorFor(m => m.Email, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-3">
+                @Html.EditorFor(m => m.DateOfBirth, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(m => m.DateOfBirth, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-3">
+                @Html.EditorFor(m => m.PhoneNumber, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(m => m.PhoneNumber, "", new { @class = "text-danger" })
+            </div>
+
+            <div class="mb-3">
+                @Html.EditorFor(m => m.ResponsibleId, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(m => m.ResponsibleId, "", new { @class = "text-danger" })
+            </div>
+
+            <button type="submit" class="btn btn-primary">
+                Salvar aluno
+            </button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/js/toastr.min.js"></script>
+    <script>
+        $(function () {
+            if (TempData["SuccessMessage"] != null) {
+                toastr.success('@TempData["SuccessMessage"]');
+            }
+            if (!ViewData.ModelState.IsValid) {
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors)) {
+                    <text>toastr.error('@error.ErrorMessage');</text>
+                }
+            }
+        });
+    </script>
+}

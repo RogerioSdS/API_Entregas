@@ -52,7 +52,7 @@ namespace APIBackend.API.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None, // 👈 Obrigatório para cross-site
-                Expires = DateTime.UtcNow.AddMinutes(15)
+                Expires = DateTime.UtcNow.AddMinutes(60)
             };
             Response.Cookies.Append("access_token", token, cookieOptions);
 

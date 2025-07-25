@@ -3,6 +3,7 @@ using Api_Entregas.ViewModels;
 using Api_Entregas.Services.Interfaces;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Api_Entregas.Controllers
 {
@@ -34,12 +35,21 @@ namespace Api_Entregas.Controllers
                 _logger.LogWarning("Login inválido: ModelState com erro.");
                 return View(model); // volta para a mesma página com os erros
             }
+
+            // Recupera o valor de cada claim
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userEmail = User.FindFirstValue(ClaimTypes.Email);
+            var userRole = User.FindFirstValue(ClaimTypes.Role);
+            var department = User.FindFirstValue("Department"); // claim custom
+
+            Console.WriteLine($"UserId: {userId} - UserEmail: {userEmail} - UserRole: {userRole} - Department: {department}");
             // Simula sucesso
-            _sessionService.SetUserData("UserDataLogin",new SignInViewModel { SignIn = true });
+            _sessionService.SetUserData("UserDataLogin", new SignInDataViewModel
+            { Id = userId, Role = userRole, Email = userEmail, StartSession = DateTime.Now, SignIn = true });
 
             return Json(new { redirectUrl = Url.Action("Index", "Home") });
         }
-       
+
         [HttpGet("ForgotPassword")]
         public IActionResult ForgotPassword()
         {
@@ -74,7 +84,7 @@ namespace Api_Entregas.Controllers
 
             return Json(new { success = false, error = forgotPasswordResult.ErrorMessage });
         }
-        
+
 
         [HttpGet("Logout")]
         public IActionResult Logout()

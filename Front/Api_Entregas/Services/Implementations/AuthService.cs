@@ -22,7 +22,7 @@ namespace Api_Entregas.Services.Implementations
             _logger = logger;
         }
 
-        public async Task<ServiceResult<SignInViewModel>> LoginAsync(LoginViewModel model)
+        public async Task<ServiceResult<SignInDataViewModel>> LoginAsync(LoginViewModel model)
         {
             try
             {
@@ -51,19 +51,19 @@ namespace Api_Entregas.Services.Implementations
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
+                    var userData = JsonConvert.DeserializeObject<SignInDataViewModel>(responseContent);
 
-                    return ServiceResult<SignInViewModel>.SuccessResult(userData);
+                    return ServiceResult<SignInDataViewModel>.SuccessResult(userData);
                 }
 
                 var errorContent = await response.Content.ReadAsStringAsync();
                 _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}. Resposta: {errorContent}");
-                return ServiceResult<SignInViewModel>.ErrorResult("E-mail ou senha inválidos.", (int)response.StatusCode);
+                return ServiceResult<SignInDataViewModel>.ErrorResult("E-mail ou senha inválidos.", (int)response.StatusCode);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao autenticar o usuário.");
-                return ServiceResult<SignInViewModel>.ErrorResult("Ocorreu um erro ao processar o login.");
+                return ServiceResult<SignInDataViewModel>.ErrorResult("Ocorreu um erro ao processar o login.");
             }
         }
 
@@ -153,23 +153,23 @@ namespace Api_Entregas.Services.Implementations
                                         if (response.IsSuccessStatusCode)
                                         {
                                             var responseContent = await response.Content.ReadAsStringAsync();
-                                            var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
+                                            var userData = JsonConvert.DeserializeObject<SignInDataViewModel>(responseContent);
 
-                                            return ServiceResult<SignInViewModel>.SuccessResult(userData);
+                                            return ServiceResult<SignInDataViewModel>.SuccessResult(userData);
                                         }
 
                                         var errorContent = await response.Content.ReadAsStringAsync();
                                         _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}. Resposta: {errorContent}");
-                                        return ServiceResult<SignInViewModel>.ErrorResult("E-mail ou senha inválidos.", (int)response.StatusCode);
+                                        return ServiceResult<SignInDataViewModel>.ErrorResult("E-mail ou senha inválidos.", (int)response.StatusCode);
                                     }
                                     catch (Exception ex)
                                     {
                                         _logger.LogError(ex, "Erro ao autenticar o usuário.");
-                                        return ServiceResult<SignInViewModel>.ErrorResult("Ocorreu um erro ao processar o login.");
+                                        return ServiceResult<SignInDataViewModel>.ErrorResult("Ocorreu um erro ao processar o login.");
                                     }
                                 }
                         */
-        public async Task<ServiceResult<SignInViewModel>> RegisterAsync(RegisterViewModel model)
+        public async Task<ServiceResult<SignInDataViewModel>> RegisterAsync(RegisterViewModel model)
         {
             try
             {
@@ -184,20 +184,20 @@ namespace Api_Entregas.Services.Implementations
                 if (response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync();
-                    var userData = JsonConvert.DeserializeObject<SignInViewModel>(responseContent);
+                    var userData = JsonConvert.DeserializeObject<SignInDataViewModel>(responseContent);
 
                     _logger.LogInformation($"Resposta da API: {responseContent}");
-                    return ServiceResult<SignInViewModel>.SuccessResult(userData);
+                    return ServiceResult<SignInDataViewModel>.SuccessResult(userData);
                 }
 
                 var errorContent = await response.Content.ReadAsStringAsync();
                 _logger.LogError($"Erro na requisição para {apiUrl}. Status: {response.StatusCode}. Resposta: {errorContent}");
-                return ServiceResult<SignInViewModel>.ErrorResult("Erro ao registrar usuário.", (int)response.StatusCode);
+                return ServiceResult<SignInDataViewModel>.ErrorResult("Erro ao registrar usuário.", (int)response.StatusCode);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Erro ao registrar o usuário.");
-                return ServiceResult<SignInViewModel>.ErrorResult("Ocorreu um erro ao processar o registro. Tente novamente.");
+                return ServiceResult<SignInDataViewModel>.ErrorResult("Ocorreu um erro ao processar o registro. Tente novamente.");
             }
         }
 
