@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using APIBackend.Domain.Identity;
 using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
@@ -12,14 +13,22 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
 
     public async Task<Student> AddStudentAsync(Student student)
     {
-        if (!string.IsNullOrEmpty(student.DateOfBirth) )
+        if (!string.IsNullOrEmpty(student.DateOfBirth))
         {
-            if (!DateTime.TryParseExact(student.DateOfBirth, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out var parsedDate))
-                throw new ArgumentException("Data de nascimento inválida. Use o formato dd/MM/yyyy.");
+            var formatos = new[] { "dd/MM/yyyy", "yyyy-MM-dd" };
+            if (!DateTime.TryParseExact(
+                    student.DateOfBirth,
+                    formatos,
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var parsedDate))
+            {
+                throw new ArgumentException(
+                  "Data de nascimento inválida. Use dd/MM/yyyy ou yyyy-MM-dd.");
+            }
 
             student.DateOfBirth = parsedDate.ToString("dd/MM/yyyy");
-        }       
-
+        }
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
@@ -55,6 +64,7 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
             throw new ArgumentNullException("O ID do estudante não pode ser nulo.");
 
         var existingStudent = await _context.Students
+            .Include(u => u.Responsibles)
             .FirstOrDefaultAsync(u => u.Id == id);
 
         if (existingStudent == null)
@@ -90,8 +100,7 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
             studentFound.DateOfBirth = student.DateOfBirth ?? studentFound.DateOfBirth;
             studentFound.PhoneNumber = student.PhoneNumber ?? studentFound.PhoneNumber;
             studentFound.PriceClasses = student.PriceClasses ?? studentFound.PriceClasses;
-            studentFound.ResponsibleId = student.ResponsibleId ?? studentFound.ResponsibleId;
-            studentFound.Responsible = student.Responsible ?? studentFound.Responsible;
+            studentFound.Responsibles = student.Responsibles ?? studentFound.Responsibles;
 
             _context.Students.Update(studentFound);
             await _context.SaveChangesAsync();
@@ -106,7 +115,7 @@ public class StudentRepoService(ApiDbContext context) : IStudentRepo
             throw;
         }
     }
-    
+
     public async Task<bool> DeleteStudentAsync(int? id)
     {
         if (id == null)

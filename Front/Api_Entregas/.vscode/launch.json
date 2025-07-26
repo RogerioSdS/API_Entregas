@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug with Hot Reload",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",                    // executa o task de build antes
+      "program": "${workspaceFolder}/bin/Debug/net9.0/Api_Entregas.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"           // perfil de Hot Reload para apps web
+    }
+  ]
+}

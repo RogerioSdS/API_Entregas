@@ -36,7 +36,7 @@
             @Html.HiddenFor(m => m.Email)
             @Html.HiddenFor(m => m.DateOfBirth)
             @Html.HiddenFor(m => m.PhoneNumber)
-            @Html.HiddenFor(m => m.ResponsibleId)
+
 
             @* ========== Exibição somente leitura ========== *@
             <div class="mb-3">
@@ -60,9 +60,28 @@
                 <p>@Html.DisplayFor(m => m.PhoneNumber)</p>
             </div>
             <div class="mb-3">
-                @Html.LabelFor(m => m.ResponsibleId):
-                <p>@Html.DisplayFor(m => m.ResponsibleId)</p>
+                @Html.LabelFor(m => m.Responsibles):
+                <p>@Html.DisplayFor(m => m.Responsibles[0].FirstName)</p>
             </div>
+            <div class="mb-3">
+                @Html.LabelFor(m => m.Responsibles):
+                @if (Model.Responsibles != null)
+                {
+                    foreach (var responsible in Model.Responsibles)
+                    {
+                        <p>@responsible.FirstName + @responsible.LastName</p>
+                    }
+                }
+            </div>
+
+            @for (int i = 0; i < Model.Responsibles?.Count; i++)
+            {
+                @* precisa ao menos do Id para o binder reconstruir a lista *@
+                @Html.Hidden($"Responsibles[{i}].Id", Model.Responsibles[i].Id)
+                @Html.Hidden($"Responsibles[{i}].FirstName", Model.Responsibles[i].FirstName)
+                @Html.Hidden($"Responsibles[{i}].LastName", Model.Responsibles[i].LastName)
+                @* … qualquer outra propriedade que você queira repostar… *@
+            }
 
             <button type="submit" class="btn btn-primary">
                 Editar Perfil
@@ -89,11 +108,11 @@
                 @* Mensagens de erro genéricas (caso haja validação no controller) *@
                 @if (!ViewData.ModelState.IsValid)
                 {
-                        foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
                     {
                         <text>toastr.error('@error.ErrorMessage');</text>
                 }
                 }
-            });
+                });
     </script>
 }

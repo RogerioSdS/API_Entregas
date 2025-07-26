@@ -2,20 +2,34 @@ using System;
 using APIBackend.Application.DTOs;
 using APIBackend.Application.Services.Interfaces;
 using APIBackend.Domain.Identity;
+using APIBackend.Repositories.Context;
 using APIBackend.Repositories.Interfaces;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace APIBackend.Application.Services;
 
-public class StudentService(IMapper mapper, IStudentRepo studentRepo) : IStudentService
+public class StudentService(IMapper mapper, IStudentRepo studentRepo, ApiDbContext context) : IStudentService
 {
     private readonly IMapper _mapper = mapper;
     private readonly IStudentRepo _studentRepo = studentRepo;
+    private readonly ApiDbContext _context = context;
 
     public async Task<StudentDTO> AddStudentAsync(StudentDTO studentDTO)
-    { 
+    {
         if (studentDTO == null)
             throw new ArgumentNullException(nameof(studentDTO), "Todos os campos exigidos do cadastro do estudante devem ser preenchidos.");
+
+        if (studentDTO.ResponsibleId != null && studentDTO.ResponsibleId.Any())
+        {
+            // Busca no banco todos os Users cujo Id está na lista
+            var responsibles = await _context.Users
+                .Where(u => studentDTO.ResponsibleId.Contains(u.Id))
+                .ToListAsync();
+
+            // Atribui à coleção de navegação
+            studentDTO.Responsibles = responsibles;
+        }
 
         var student = _mapper.Map<Student>(studentDTO);
 

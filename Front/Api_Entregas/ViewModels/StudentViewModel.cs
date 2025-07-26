@@ -16,6 +16,8 @@ namespace Api_Entregas.ViewModels
         [DisplayName("Telefone")]
         public string? PhoneNumber { get; set; } = string.Empty;
         [DisplayName("Responsável")]
-        public int? ResponsibleId { get; set; }
+        public List<UserViewModel>? Responsibles { get; set; }
+        public List<int>? ResponsibleId { get; set; } = new List<int>();
+
     }
 }

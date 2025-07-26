@@ -1,11 +1,39 @@
 @model string
+@using System
+
 @{
+    // Pega o nome completo do campo no form (por ex. "FirstName", "Email", etc.).
+    // Isso é usado tanto para o atributo name quanto id do <input>.
     var fullName = ViewData.TemplateInfo.GetFullHtmlFieldName("");
-    var labelText = ViewData.ModelMetadata.DisplayName ?? fullName;
-    var inputType = fullName.ToLower().Contains("email") ? "email" : "text";
+
+    // Pega o DisplayName definido no seu ViewModel (o texto do DisplayNameAttribute)
+    // ou, se não houver, usa o próprio fullName como placeholder.
+    var placeholder = ViewData.ModelMetadata.DisplayName ?? fullName;
+
+    // Se o nome do campo contém "email", usa <input type="email"> para validação nativa
+    // caso contrário, utiliza <input type="text">.
+    var inputType = fullName
+        .IndexOf("email", StringComparison.OrdinalIgnoreCase) >= 0
+        ? "email"
+        : "text";
 }
-<div class="formbold-mb-3">
-    <label for="@fullName" class="formbold-form-label">@labelText</label>
-    @Html.TextBox("", Model, new { @class = "formbold-form-input", type = inputType, id = fullName, name = fullName, placeholder =  labelText })
-    <span asp-validation-for="@fullName" class="text-danger"></span>
-</div>
+
+@* 
+   Este EditorTemplate substitui o uso direto de @Html.TextBoxFor(m => m.Propriedade)
+   quando você chama @Html.EditorFor(m => m.Propriedade) numa view. 
+   Ele gera apenas o <input> e a mensagem de validação, sem o <label>.
+*@
+
+@Html.TextBox(
+    fullName,              // 1) name do campo no form: name="FirstName"
+    Model,                 // 2) valor atual do Model (string) será atribuído ao value=""
+    new {
+        @class      = "formbold-form-input", // Classe CSS para estilo
+        type        = inputType,             // "text" ou "email"
+        id          = fullName,             // id="FirstName" (mesmo que name)
+        placeholder = placeholder           // placeholder="Nome" (ou nome do campo)
+    }
+)
+
+@* Exibe possíveis mensagens de erro de validação para este campo *@
+<span asp-validation-for="@fullName" class="text-danger"></span>
